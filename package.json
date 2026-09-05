@@ -1,0 +1,1 @@
+{ "name": "breath-hold-beer", "version": "1.0.0", "private": true, "description": "Hold My Beer - a breath-hold beer-pour challenge toy", "scripts": { "start": "node server.js" } }

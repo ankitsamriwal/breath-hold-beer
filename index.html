@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Hold My Beer - the breath-hold pour challenge</title>
+<meta name="description" content="Hold your breath. Pour the perfect pint. How long can you last?">
+<meta property="og:title" content="Hold My Beer">
+<meta property="og:description" content="Hold your breath. Pour the perfect pint. How long can you last?">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0906; --panel:#141109; --gold:#f5b02e; --gold-hi:#ffd45e; --amber:#c97b12;
+  --cream:#fdf3d8; --ink:#efe9dc; --dim:#8a8272; --line:#2a2517; --red:#e5484d;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg); color:var(--ink); font-family:'Space Grotesk',sans-serif;
+  display:flex; flex-direction:column; align-items:center;
+  user-select:none; -webkit-user-select:none; touch-action:none;
+  background-image:radial-gradient(ellipse 80% 60% at 50% -10%, #221a08 0%, transparent 60%),
+                   radial-gradient(ellipse 60% 50% at 50% 110%, #1a1206 0%, transparent 60%);
+}
+header{width:100%;max-width:560px;padding:max(18px,env(safe-area-inset-top)) 24px 0;display:flex;justify-content:space-between;align-items:baseline}
+.wordmark{font-weight:700;font-size:15px;letter-spacing:.22em;text-transform:uppercase}
+.wordmark em{font-style:normal;color:var(--gold)}
+.pb{font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:.08em}
+.pb b{color:var(--gold)}
+.stage{flex:1;width:100%;max-width:560px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;position:relative;padding:0 24px}
+.orbit-wrap{position:relative;width:150px;height:150px;flex:0 0 auto}
+.ring{position:absolute;inset:0;border:1px solid var(--line);border-radius:50%}
+.ball{position:absolute;width:12px;height:12px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 14px 3px rgba(245,176,46,.55);left:50%;top:50%;margin:-6px 0 0 -6px}
+.timer{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.timer .t{font-family:'Space Mono',monospace;font-size:34px;font-weight:700;color:var(--cream);font-variant-numeric:tabular-nums}
+.timer .lbl{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+.mug-wrap{position:relative;width:min(62vw,260px);aspect-ratio:260/340;flex:0 0 auto}
+canvas#mug{width:100%;height:100%;display:block}
+.rating-chip{height:26px;display:flex;align-items:center;justify-content:center}
+.chip{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.25em;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(245,176,46,.35);padding:5px 14px;border-radius:999px;
+  background:rgba(245,176,46,.06);opacity:0;transform:translateY(6px);transition:.35s}
+.chip.on{opacity:1;transform:none}
+.controls{width:100%;max-width:560px;padding:0 24px max(22px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;gap:14px}
+.hold-btn{
+  width:100%;max-width:340px;padding:20px 0;border-radius:18px;border:1px solid rgba(245,176,46,.4);
+  background:linear-gradient(180deg,rgba(245,176,46,.14),rgba(245,176,46,.05));
+  color:var(--gold-hi);font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+  letter-spacing:.24em;text-transform:uppercase;cursor:pointer;transition:transform .12s, background .2s;
+}
+.hold-btn:active,.hold-btn.holding{background:linear-gradient(180deg,rgba(245,176,46,.3),rgba(245,176,46,.1));transform:scale(.97)}
+.safety{font-size:10.5px;color:var(--dim);text-align:center;line-height:1.5;max-width:340px;letter-spacing:.02em}
+/* result overlay */
+.result{position:fixed;inset:0;background:rgba(10,9,6,.92);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s;z-index:10}
+.result.on{opacity:1;pointer-events:auto}
+.card{width:min(88vw,380px);background:var(--panel);border:1px solid var(--line);border-radius:24px;
+  padding:32px 28px 26px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+  transform:translateY(16px) scale(.96);transition:transform .45s cubic-bezier(.2,.9,.3,1.2)}
+.result.on .card{transform:none}
+.card .kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
+.card .rating{font-size:44px;font-weight:700;line-height:1.05;letter-spacing:-.01em;margin:6px 0 2px;
+  background:linear-gradient(120deg,var(--gold-hi),var(--gold) 55%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
+.card .time{font-family:'Space Mono',monospace;font-size:15px;color:var(--cream)}
+.card .fill{font-family:'Space Mono',monospace;font-size:12px;color:var(--dim)}
+.card .quip{font-size:13.5px;color:var(--dim);margin:10px 0 4px;line-height:1.55;min-height:42px}
+.card .actions{display:flex;gap:10px;width:100%;margin-top:14px}
+.btn{flex:1;padding:14px 0;border-radius:14px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;
+  letter-spacing:.14em;text-transform:uppercase;cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--ink);transition:.2s}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:#171203}
+.btn:active{transform:scale(.96)}
+.toast{position:fixed;bottom:calc(24px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,20px);
+  background:var(--cream);color:#171203;font-size:13px;font-weight:600;padding:10px 18px;border-radius:999px;
+  opacity:0;transition:.3s;z-index:20;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wordmark">HOLD <em>MY</em> BEER</div>
+  <div class="pb" id="pb"></div>
+</header>
+
+<div class="stage" id="stage">
+  <div class="orbit-wrap">
+    <div class="ring"></div>
+    <div class="ball" id="ball"></div>
+    <div class="timer"><div class="t" id="timer">0.0</div><div class="lbl" id="timerLbl">seconds</div></div>
+  </div>
+  <div class="mug-wrap"><canvas id="mug"></canvas></div>
+  <div class="rating-chip"><span class="chip" id="chip"></span></div>
+</div>
+
+<div class="controls">
+  <button class="hold-btn" id="holdBtn">Hold to pour</button>
+  <div class="safety">Never hyperventilate before a breath hold, and never do this in or near water. Stop the second you feel dizzy. CO2 tolerance, not a medical test.</div>
+</div>
+
+<div class="result" id="result">
+  <div class="card">
+    <div class="kicker">Your pour</div>
+    <div class="rating" id="rRating">GOOD</div>
+    <div class="time" id="rTime">0.0s hold</div>
+    <div class="fill" id="rFill">0% of the pint</div>
+    <div class="quip" id="rQuip"></div>
+    <div class="actions">
+      <button class="btn" id="shareBtn">Share</button>
+      <button class="btn primary" id="againBtn">Go again</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script>
+(() => {
+  // ---------- constants ----------
+  const FULL_POUR_SECONDS = 50;            // hold this long -> 100% pint
+  const TIERS = [
+    { min: 45, name: 'ATHLETIC',      quip: 'Divers are taking notes. The pint is yours - you earned every drop.' },
+    { min: 30, name: 'EXCELLENT',     quip: 'Serious lungs. The head on that pour is basically a trophy.' },
+    { min: 15, name: 'GOOD',          quip: 'A respectable pint. Solid lungs, solid pour, no notes.' },
+    { min: 0,  name: 'BELOW AVERAGE', quip: 'That is a taster glass at best. Breathe, reset, go again.' },
+  ];
+  const ORBIT_SECONDS = 8;                 // one revolution of the pacing ball
+
+  // ---------- dom ----------
+  const ball = document.getElementById('ball');
+  const timerEl = document.getElementById('timer');
+  const timerLbl = document.getElementById('timerLbl');
+  const chip = document.getElementById('chip');
+  const holdBtn = document.getElementById('holdBtn');
+  const result = document.getElementById('result');
+  const pbEl = document.getElementById('pb');
+  const toast = document.getElementById('toast');
+
+  // ---------- state ----------
+  let holding = false, startT = 0, elapsed = 0, best = +(localStorage.getItem('hmb_best') || 0);
+  let fill = 0;                            // 0..1 current pour
+  let lastChipTier = null;
+
+  function renderPB(){ pbEl.innerHTML = best > 0 ? 'PB <b>' + best.toFixed(1) + 's</b>' : ''; }
+  renderPB();
+
+  // ---------- audio (synthesized ASMR) ----------
+  let AC = null, master, pourNodes = null;
+  function audio(){
+    if (AC) return AC;
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain(); master.gain.value = 0.9; master.connect(AC.destination);
+    return AC;
+  }
+  function noiseBuffer(sec){
+    const ctx = audio(), buf = ctx.createBuffer(1, ctx.sampleRate * sec, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+  function playCrack(){
+    const ctx = audio(), t = ctx.currentTime;
+    // cap pop: short bright click
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'square'; o.frequency.setValueAtTime(2200, t); o.frequency.exponentialRampToValueAtTime(300, t + .03);
+    g.gain.setValueAtTime(.35, t); g.gain.exponentialRampToValueAtTime(.001, t + .05);
+    o.connect(g).connect(master); o.start(t); o.stop(t + .06);
+    // bottle hiss release
+    const n = ctx.createBufferSource(); n.buffer = noiseBuffer(.4);
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 5200; bp.Q.value = .8;
+    const ng = ctx.createGain(); ng.gain.setValueAtTime(.001, t); ng.gain.exponentialRampToValueAtTime(.5, t + .02);
+    ng.gain.exponentialRampToValueAtTime(.001, t + .38);
+    n.connect(bp).connect(ng).connect(master); n.start(t); n.stop(t + .4);
+    // glass clink
+    const s = ctx.createOscillator(), sg = ctx.createGain();
+    s.type = 'sine'; s.frequency.value = 2600;
+    sg.gain.setValueAtTime(.12, t + .01); sg.gain.exponentialRampToValueAtTime(.001, t + .3);
+    s.connect(sg).connect(master); s.start(t + .01); s.stop(t + .32);
+  }
+  function startPourSound(){
+    const ctx = audio(), t = ctx.currentTime;
+    // glug/gurgle body: lowpassed noise with slow LFO
+    const body = ctx.createBufferSource(); body.buffer = noiseBuffer(2); body.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 620; lp.Q.value = 2.2;
+    const bg = ctx.createGain(); bg.gain.value = 0;
+    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 6.5;
+    const lfoG = ctx.createGain(); lfoG.gain.value = 260;
+    lfo.connect(lfoG).connect(lp.frequency);
+    // fizz: bright noise
+    const fizz = ctx.createBufferSource(); fizz.buffer = noiseBuffer(2); fizz.loop = true;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 4800;
+    const fg = ctx.createGain(); fg.gain.value = 0;
+    body.connect(lp).connect(bg).connect(master);
+    fizz.connect(hp).connect(fg).connect(master);
+    body.start(t); fizz.start(t); lfo.start(t);
+    bg.gain.linearRampToValueAtTime(.5, t + .25);
+    fg.gain.linearRampToValueAtTime(.10, t + .6);
+    pourNodes = { body, fizz, lfo, bg, fg, hp };
+  }
+  function setFrothiness(x){ // 0..1 as glass nears full -> more fizz, softer body
+    if (!pourNodes || !AC) return;
+    const t = AC.currentTime;
+    pourNodes.fg.gain.setTargetAtTime(.10 + x * .30, t, .15);
+    pourNodes.hp.frequency.setTargetAtTime(4800 - x * 1800, t, .2);
+    pourNodes.bg.gain.setTargetAtTime(.5 - x * .25, t, .2);
+  }
+  function stopPourSound(){
+    if (!pourNodes) return;
+    const t = AC.currentTime, p = pourNodes; pourNodes = null;
+    p.bg.gain.setTargetAtTime(0, t, .08); p.fg.gain.setTargetAtTime(0, t, .25);
+    setTimeout(() => { try { p.body.stop(); p.fizz.stop(); p.lfo.stop(); } catch(e){} }, 900);
+    // settling froth hiss tail
+    const ctx = audio(), n = ctx.createBufferSource(); n.buffer = noiseBuffer(1.4);
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3800;
+    const g = ctx.createGain(); g.gain.setValueAtTime(.001, t); g.gain.exponentialRampToValueAtTime(.22, t + .12);
+    g.gain.exponentialRampToValueAtTime(.001, t + 1.3);
+    n.connect(hp).connect(g).connect(master); n.start(t); n.stop(t + 1.4);
+  }
+
+  // ---------- mug rendering ----------
+  const cv = document.getElementById('mug'), cx2 = cv.getContext('2d');
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  function sizeCanvas(){
+    const r = cv.getBoundingClientRect();
+    W = r.width; H = r.height;
+    cv.width = W * DPR; cv.height = H * DPR;
+    cx2.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+  new ResizeObserver(sizeCanvas).observe(cv);
+
+  // mug geometry (in unit space, mug area)
+  function mugPath(ctx, x, y, w, h){
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w, y);
+    ctx.lineTo(x + w * .92, y + h);         // slight taper
+    ctx.quadraticCurveTo(x + w * .9, y + h + 6, x + w * .82, y + h + 6);
+    ctx.lineTo(x + w * .18, y + h + 6);
+    ctx.quadraticCurveTo(x + w * .1, y + h + 6, x + w * .08, y + h);
+    ctx.closePath();
+  }
+  const bubbles = [];
+  function spawnBubbles(n, beerRect){
+    for (let i = 0; i < n; i++){
+      bubbles.push({
+        x: beerRect.x + Math.random() * beerRect.w,
+        y: beerRect.y + beerRect.h - Math.random() * 12,
+        r: .8 + Math.random() * 2.4,
+        v: 14 + Math.random() * 30,
+        drift: (Math.random() - .5) * 8,
+      });
+    }
+  }
+  let pourStreamPhase = 0;
+
+  function draw(ts){
+    cx2.clearRect(0, 0, W, H);
+    const mw = W * .62, mh = H * .8, mx = (W - mw) / 2, my = H * .06;
+
+    // handle
+    cx2.strokeStyle = 'rgba(239,233,220,.28)'; cx2.lineWidth = W * .028; cx2.lineCap = 'round';
+    cx2.beginPath();
+    cx2.arc(mx + mw + W * .10, my + mh * .42, W * .11, -Math.PI * .55, Math.PI * .55);
+    cx2.stroke();
+
+    const inner = { x: mx + 5, y: my + 8, w: mw - 10, h: mh - 12 };
+    const headH = fill > .02 ? Math.min(inner.h * .10, 8 + fill * inner.h * .10) : 0;
+    const beerH = Math.max(0, (inner.h - headH) * Math.min(fill * 1.04, 1));
+    const beerRect = { x: inner.x, y: inner.y + inner.h - beerH, w: inner.w, h: beerH };
+
+    // beer body
+    if (beerH > 0){
+      const g = cx2.createLinearGradient(0, beerRect.y, 0, beerRect.y + beerRect.h);
+      g.addColorStop(0, '#ffd45e'); g.addColorStop(.35, '#f5b02e'); g.addColorStop(1, '#a8630b');
+      cx2.fillStyle = g;
+      cx2.beginPath();
+      // wavy top surface
+      const surf = beerRect.y, amp = holding ? 2.2 : 1.1;
+      cx2.moveTo(beerRect.x, surf);
+      for (let px = 0; px <= beerRect.w; px += 6)
+        cx2.lineTo(beerRect.x + px, surf + Math.sin(px * .09 + ts * .004) * amp);
+      cx2.lineTo(beerRect.x + beerRect.w, beerRect.y + beerRect.h);
+      cx2.lineTo(beerRect.x, beerRect.y + beerRect.h);
+      cx2.closePath(); cx2.fill();
+      // glass glare on beer
+      cx2.fillStyle = 'rgba(255,255,255,.07)';
+      cx2.fillRect(beerRect.x + beerRect.w * .12, beerRect.y + 4, beerRect.w * .1, beerRect.h - 8);
+    }
+
+    // bubbles
+    if (beerH > 4){
+      if (holding && Math.random() < .5) spawnBubbles(3, beerRect);
+      cx2.fillStyle = 'rgba(255,240,200,.5)';
+      for (let i = bubbles.length - 1; i >= 0; i--){
+        const b = bubbles[i];
+        b.y -= b.v * .016; b.x += Math.sin(ts * .003 + b.r * 10) * .3 + b.drift * .016;
+        if (b.y < beerRect.y + 2 || b.x < beerRect.x || b.x > beerRect.x + beerRect.w){ bubbles.splice(i, 1); continue; }
+        cx2.beginPath(); cx2.arc(b.x, b.y, b.r, 0, 7); cx2.fill();
+      }
+    } else bubbles.length = 0;
+
+    // froth head
+    if (headH > 0){
+      const fy = inner.y + inner.h - beerH - headH;
+      cx2.fillStyle = '#fdf3d8';
+      cx2.beginPath();
+      const ampF = holding ? 3 : 1.5;
+      cx2.moveTo(inner.x, fy + headH);
+      cx2.lineTo(inner.x, fy + 6);
+      for (let px = 0; px <= inner.w; px += 8)
+        cx2.arc(inner.x + px + 4, fy + 6 + Math.sin(px * .15 + ts * .003) * ampF * .4, 5.5, Math.PI, 0);
+      cx2.lineTo(inner.x + inner.w, fy + headH);
+      cx2.closePath(); cx2.fill();
+      // froth speckle
+      cx2.fillStyle = 'rgba(201,123,18,.25)';
+      for (let i = 0; i < 10; i++){
+        const sx = inner.x + ((i * 37.7) % inner.w), sy = fy + 3 + ((i * 13.3) % Math.max(headH - 4, 2));
+        cx2.beginPath(); cx2.arc(sx, sy, 1.4, 0, 7); cx2.fill();
+      }
+    }
+
+    // pour stream while holding and not full
+    if (holding && fill < 1){
+      pourStreamPhase += .016;
+      const sx = mx + mw / 2 + Math.sin(pourStreamPhase * 9) * 1.2;
+      const grad = cx2.createLinearGradient(sx, 0, sx, beerRect.y || inner.y + inner.h);
+      grad.addColorStop(0, 'rgba(255,212,94,.0)'); grad.addColorStop(.2, 'rgba(255,212,94,.95)'); grad.addColorStop(1, 'rgba(245,176,46,.95)');
+      cx2.strokeStyle = grad; cx2.lineWidth = 4.5; cx2.lineCap = 'round';
+      cx2.beginPath(); cx2.moveTo(sx, my - H * .02);
+      cx2.lineTo(sx, Math.max(beerRect.y, inner.y) + 2); cx2.stroke();
+      // splash droplets
+      cx2.fillStyle = 'rgba(255,212,94,.8)';
+      for (let i = 0; i < 4; i++){
+        const dx = Math.sin(ts * .01 + i * 2.1) * 8, dy = Math.abs(Math.sin(ts * .008 + i)) * 5;
+        cx2.beginPath(); cx2.arc(sx + dx, Math.max(beerRect.y, inner.y) - dy, 1.6, 0, 7); cx2.fill();
+      }
+    }
+
+    // glass outline
+    cx2.strokeStyle = 'rgba(239,233,220,.4)'; cx2.lineWidth = 2.5;
+    mugPath(cx2, mx, my, mw, mh); cx2.stroke();
+    // glass shine
+    cx2.strokeStyle = 'rgba(255,255,255,.10)'; cx2.lineWidth = mw * .09;
+    cx2.beginPath(); cx2.moveTo(mx + mw * .16, my + 10); cx2.lineTo(mx + mw * .22, my + mh - 8); cx2.stroke();
+
+    // condensation
+    if (fill > .1){
+      cx2.fillStyle = 'rgba(220,235,255,.18)';
+      for (let i = 0; i < 7; i++){
+        const cxp = mx + 6 + ((i * 53.3) % (mw - 12)), cyp = my + 14 + ((i * 71.7) % (mh * .7));
+        cx2.beginPath(); cx2.arc(cxp, cyp, 1.2 + (i % 3) * .6, 0, 7); cx2.fill();
+      }
+    }
+  }
+
+  // ---------- orbit + timer ----------
+  function orbit(ts){
+    const wrap = ball.parentElement, R = wrap.offsetWidth / 2 - 6;
+    const ang = holding ? ((elapsed / ORBIT_SECONDS) * Math.PI * 2 - Math.PI / 2)
+                        : (ts * .0004 % (Math.PI * 2)) - Math.PI / 2;
+    ball.style.transform = 'translate(' + Math.cos(ang) * R + 'px,' + Math.sin(ang) * R + 'px)';
+  }
+
+  // ---------- main loop ----------
+  function loop(ts){
+    if (holding){
+      elapsed = (performance.now() - startT) / 1000;
+      const target = Math.min(elapsed / FULL_POUR_SECONDS, 1);
+      fill += (target - fill) * .18;        // smooth chase
+      setFrothiness(Math.max(0, (fill - .8) / .2));
+      const tier = tierFor(elapsed);
+      if (tier !== lastChipTier){ lastChipTier = tier; showChip(tier); }
+      timerEl.textContent = elapsed.toFixed(1);
+    }
+    orbit(ts); draw(ts);
+    requestAnimationFrame(loop);
+  }
+  function tierFor(s){ return TIERS.find(t => s >= t.min); }
+  function showChip(tier){
+    chip.textContent = tier.name;
+    chip.classList.add('on');
+  }
+
+  // ---------- hold interaction ----------
+  const stage = document.getElementById('stage');
+  function begin(e){
+    if (holding || result.classList.contains('on')) return;
+    if (e.cancelable) e.preventDefault();
+    audio(); if (AC.state === 'suspended') AC.resume();
+    holding = true; startT = performance.now(); elapsed = 0; fill = 0; lastChipTier = null;
+    chip.classList.remove('on');
+    timerLbl.textContent = 'holding';
+    holdBtn.classList.add('holding'); holdBtn.textContent = 'Pouring…';
+    playCrack(); startPourSound();
+  }
+  function end(){
+    if (!holding) return;
+    holding = false;
+    stopPourSound();
+    holdBtn.classList.remove('holding'); holdBtn.textContent = 'Hold to pour';
+    timerLbl.textContent = 'seconds';
+    finish();
+  }
+  holdBtn.addEventListener('pointerdown', begin);
+  window.addEventListener('pointerup', end);
+  window.addEventListener('pointercancel', end);
+  window.addEventListener('blur', end);
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  // keyboard: spacebar hold
+  window.addEventListener('keydown', e => { if (e.code === 'Space' && !e.repeat) begin(e); });
+  window.addEventListener('keyup', e => { if (e.code === 'Space') end(); });
+
+  // ---------- result ----------
+  function finish(){
+    const s = elapsed, tier = tierFor(s);
+    if (s > best){ best = s; localStorage.setItem('hmb_best', String(best)); renderPB(); }
+    document.getElementById('rRating').textContent = tier.name;
+    document.getElementById('rTime').textContent = s.toFixed(1) + 's hold';
+    document.getElementById('rFill').textContent = Math.round(Math.min(s / FULL_POUR_SECONDS, 1) * 100) + '% of the pint';
+    document.getElementById('rQuip').textContent = tier.quip;
+    setTimeout(() => result.classList.add('on'), 650);
+  }
+  document.getElementById('againBtn').addEventListener('click', () => {
+    result.classList.remove('on'); fill = 0; elapsed = 0; timerEl.textContent = '0.0';
+  });
+  document.getElementById('shareBtn').addEventListener('click', async () => {
+    const s = elapsed, tier = tierFor(s);
+    const pct = Math.round(Math.min(s / FULL_POUR_SECONDS, 1) * 100);
+    const text = 'I held my breath ' + s.toFixed(1) + 's and poured a ' + pct + '% pint (' + tier.name + ') on Hold My Beer. Beat me: ' + location.href;
+    if (navigator.share){
+      try { await navigator.share({ title: 'Hold My Beer', text }); return; } catch(e){ if (e && e.name === 'AbortError') return; }
+    }
+    try { await navigator.clipboard.writeText(text); }
+    catch(e){
+      const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    toast.classList.add('on'); setTimeout(() => toast.classList.remove('on'), 1600);
+  });
+
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
