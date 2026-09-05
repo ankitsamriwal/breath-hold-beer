@@ -77,6 +77,23 @@ canvas#mug{width:100%;height:100%;display:block}
   background:var(--cream);color:#171203;font-size:13px;font-weight:600;padding:10px 18px;border-radius:999px;
   opacity:0;transition:.3s;z-index:20;pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.hold-note{position:absolute;top:max(14px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);
+  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--gold);border:1px solid rgba(245,176,46,.3);border-radius:999px;padding:5px 14px;
+  background:rgba(20,17,9,.85);opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap}
+.hold-note.on{opacity:1}
+/* first-visit disclaimer */
+.gate{position:fixed;inset:0;background:rgba(10,9,6,.96);backdrop-filter:blur(12px);
+  display:flex;align-items:center;justify-content:center;z-index:30;opacity:1;transition:opacity .4s}
+.gate.off{opacity:0;pointer-events:none}
+.gate .card{width:min(88vw,380px);background:var(--panel);border:1px solid var(--line);border-radius:24px;
+  padding:30px 26px 24px;display:flex;flex-direction:column;gap:14px}
+.gate h1{font-size:20px;font-weight:700;letter-spacing:-.01em;color:var(--cream)}
+.gate ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.gate li{font-size:13px;line-height:1.5;color:var(--dim);padding-left:18px;position:relative}
+.gate li::before{content:'';position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.gate li b{color:var(--ink);font-weight:600}
+.gate .btn{width:100%;margin-top:4px}
 </style>
 </head>
 <body>
@@ -97,7 +114,21 @@ canvas#mug{width:100%;height:100%;display:block}
 
 <div class="controls">
   <button class="hold-btn" id="holdBtn">Hold to pour</button>
-  <div class="safety">Never hyperventilate before a breath hold, and never do this in or near water. Stop the second you feel dizzy. CO2 tolerance, not a medical test.</div>
+  <div class="safety">Never hyperventilate before a breath hold, and never do this in or near water. Stop the second you feel dizzy. Measures CO2 tolerance - not a medical or fitness test. Beer-themed toy: the pint is virtual, but if you pour a real one, legal drinking age applies.</div>
+  <div class="hold-note" id="holdNote">Not in water. Stop if dizzy.</div>
+</div>
+
+<div class="gate" id="gate">
+  <div class="card">
+    <h1>Before you hold</h1>
+    <ul>
+      <li><b>Never hyperventilate</b> before a breath hold - it can cause a blackout with no warning.</li>
+      <li><b>Never in or near water.</b> Not a pool, not a bath, not the sea. Shallow-water blackout is real and it kills.</li>
+      <li><b>Stop the second you feel dizzy.</b> This measures CO2 tolerance, not fitness or health. It is not a medical test.</li>
+      <li><b>Beer-themed toy.</b> The pint is virtual. If you pour a real one, legal drinking age applies.</li>
+    </ul>
+    <button class="btn primary" id="gateBtn">Got it - let me pour</button>
+  </div>
 </div>
 
 <div class="result" id="result">
@@ -118,13 +149,15 @@ canvas#mug{width:100%;height:100%;display:block}
 <script>
 (() => {
   // ---------- constants ----------
-  const FULL_POUR_SECONDS = 50;            // hold this long -> 100% pint
+  const FULL_POUR_SECONDS = 120;           // 2:00 hold -> 100% pint
+  const MAX_HOLD_SECONDS = 120;            // hard cap: the hold auto-ends here
   const TIERS = [
-    { min: 45, name: 'ATHLETIC',      quip: 'Divers are taking notes. The pint is yours - you earned every drop.' },
-    { min: 30, name: 'EXCELLENT',     quip: 'Serious lungs. The head on that pour is basically a trophy.' },
-    { min: 15, name: 'GOOD',          quip: 'A respectable pint. Solid lungs, solid pour, no notes.' },
+    { min: 90, name: 'ATHLETIC',      quip: 'Divers are taking notes. The pint is yours - you earned every drop.' },
+    { min: 60, name: 'EXCELLENT',     quip: 'Serious lungs. The head on that pour is basically a trophy.' },
+    { min: 30, name: 'GOOD',          quip: 'A respectable pint. Solid lungs, solid pour, no notes.' },
     { min: 0,  name: 'BELOW AVERAGE', quip: 'That is a taster glass at best. Breathe, reset, go again.' },
   ];
+  const CAP_QUIP = 'Two full minutes - the pint literally cannot get fuller. This is the ceiling, and you hit it.';
   const ORBIT_SECONDS = 8;                 // one revolution of the pacing ball
 
   // ---------- dom ----------
@@ -366,6 +399,7 @@ canvas#mug{width:100%;height:100%;display:block}
   function loop(ts){
     if (holding){
       elapsed = (performance.now() - startT) / 1000;
+      if (elapsed >= MAX_HOLD_SECONDS){ elapsed = MAX_HOLD_SECONDS; timerEl.textContent = elapsed.toFixed(1); end(); }
       const target = Math.min(elapsed / FULL_POUR_SECONDS, 1);
       fill += (target - fill) * .18;        // smooth chase
       setFrothiness(Math.max(0, (fill - .8) / .2));
@@ -384,6 +418,20 @@ canvas#mug{width:100%;height:100%;display:block}
 
   // ---------- hold interaction ----------
   const stage = document.getElementById('stage');
+  // first-visit disclaimer gate
+  const gate = document.getElementById('gate');
+  if (localStorage.getItem('hmb_gate_v1')) gate.classList.add('off');
+  document.getElementById('gateBtn').addEventListener('click', () => {
+    localStorage.setItem('hmb_gate_v1', '1'); gate.classList.add('off');
+  });
+  // brief reminder on every hold start
+  const holdNote = document.getElementById('holdNote');
+  let holdNoteT = null;
+  function flashHoldNote(){
+    holdNote.classList.add('on');
+    clearTimeout(holdNoteT);
+    holdNoteT = setTimeout(() => holdNote.classList.remove('on'), 1800);
+  }
   function begin(e){
     if (holding || result.classList.contains('on')) return;
     if (e.cancelable) e.preventDefault();
@@ -393,6 +441,7 @@ canvas#mug{width:100%;height:100%;display:block}
     timerLbl.textContent = 'holding';
     holdBtn.classList.add('holding'); holdBtn.textContent = 'Pouring…';
     playCrack(); startPourSound();
+    flashHoldNote();
   }
   function end(){
     if (!holding) return;
@@ -418,7 +467,7 @@ canvas#mug{width:100%;height:100%;display:block}
     document.getElementById('rRating').textContent = tier.name;
     document.getElementById('rTime').textContent = s.toFixed(1) + 's hold';
     document.getElementById('rFill').textContent = Math.round(Math.min(s / FULL_POUR_SECONDS, 1) * 100) + '% of the pint';
-    document.getElementById('rQuip').textContent = tier.quip;
+    document.getElementById('rQuip').textContent = s >= MAX_HOLD_SECONDS ? CAP_QUIP : tier.quip;
     setTimeout(() => result.classList.add('on'), 650);
   }
   document.getElementById('againBtn').addEventListener('click', () => {
