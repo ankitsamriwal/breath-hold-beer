@@ -180,12 +180,12 @@ canvas#mug{width:100%;height:100%;display:block}
   }
   function startPourSound(){
     const ctx = audio(), t = ctx.currentTime;
-    // glug/gurgle body: lowpassed noise with slow LFO
+    // glug/gurgle body: mid-band noise with a wobbling filter - liquid, no low rumble
     const body = ctx.createBufferSource(); body.buffer = noiseBuffer(2); body.loop = true;
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 620; lp.Q.value = 2.2;
+    const lp = ctx.createBiquadFilter(); lp.type = 'bandpass'; lp.frequency.value = 1400; lp.Q.value = 1.1;
     const bg = ctx.createGain(); bg.gain.value = 0;
-    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 6.5;
-    const lfoG = ctx.createGain(); lfoG.gain.value = 260;
+    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 8.5;
+    const lfoG = ctx.createGain(); lfoG.gain.value = 450;
     lfo.connect(lfoG).connect(lp.frequency);
     // fizz: bright noise
     const fizz = ctx.createBufferSource(); fizz.buffer = noiseBuffer(2); fizz.loop = true;
@@ -194,8 +194,8 @@ canvas#mug{width:100%;height:100%;display:block}
     body.connect(lp).connect(bg).connect(master);
     fizz.connect(hp).connect(fg).connect(master);
     body.start(t); fizz.start(t); lfo.start(t);
-    bg.gain.linearRampToValueAtTime(.5, t + .25);
-    fg.gain.linearRampToValueAtTime(.10, t + .6);
+    bg.gain.linearRampToValueAtTime(.35, t + .25);
+    fg.gain.linearRampToValueAtTime(.13, t + .6);
     pourNodes = { body, fizz, lfo, bg, fg, hp };
   }
   function setFrothiness(x){ // 0..1 as glass nears full -> more fizz, softer body
@@ -203,7 +203,7 @@ canvas#mug{width:100%;height:100%;display:block}
     const t = AC.currentTime;
     pourNodes.fg.gain.setTargetAtTime(.10 + x * .30, t, .15);
     pourNodes.hp.frequency.setTargetAtTime(4800 - x * 1800, t, .2);
-    pourNodes.bg.gain.setTargetAtTime(.5 - x * .25, t, .2);
+    pourNodes.bg.gain.setTargetAtTime(.35 - x * .18, t, .2);
   }
   function stopPourSound(){
     if (!pourNodes) return;
