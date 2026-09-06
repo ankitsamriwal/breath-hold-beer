@@ -10,7 +10,7 @@
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Cormorant+Garamond:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#0a0906; --panel:#141109; --gold:#f5b02e; --gold-hi:#ffd45e; --amber:#c97b12;
@@ -40,6 +40,12 @@ header{width:100%;max-width:560px;padding:max(18px,env(safe-area-inset-top)) 24p
 .timer .lbl{font-size:9px;letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
 .mug-wrap{position:relative;width:min(62vw,260px);aspect-ratio:260/340;flex:0 0 auto}
 canvas#mug{width:100%;height:100%;display:block}
+.caption-slot{height:34px;display:flex;align-items:center;justify-content:center;width:100%}
+.caption{font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:500;font-size:20px;
+  color:var(--cream);letter-spacing:.04em;opacity:0;transform:translateY(6px);
+  transition:opacity .9s ease,transform .9s ease;text-align:center;max-width:92%;
+  text-shadow:0 2px 14px rgba(0,0,0,.6)}
+.caption.on{opacity:.96;transform:none}
 .rating-chip{height:26px;display:flex;align-items:center;justify-content:center}
 .chip{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.25em;text-transform:uppercase;
   color:var(--gold);border:1px solid rgba(245,176,46,.35);padding:5px 14px;border-radius:999px;
@@ -63,7 +69,7 @@ canvas#mug{width:100%;height:100%;display:block}
   transform:translateY(16px) scale(.96);transition:transform .45s cubic-bezier(.2,.9,.3,1.2)}
 .result.on .card{transform:none}
 .card .kicker{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.3em;color:var(--dim);text-transform:uppercase}
-.card .rating{font-size:44px;font-weight:700;line-height:1.05;letter-spacing:-.01em;margin:6px 0 2px;
+.card .rating{font-size:40px;font-weight:700;line-height:1.05;letter-spacing:-.01em;margin:6px 0 2px;
   background:linear-gradient(120deg,var(--gold-hi),var(--gold) 55%,var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent}
 .card .time{font-family:'Space Mono',monospace;font-size:15px;color:var(--cream)}
 .card .fill{font-family:'Space Mono',monospace;font-size:12px;color:var(--dim)}
@@ -94,6 +100,7 @@ canvas#mug{width:100%;height:100%;display:block}
 .gate li::before{content:'';position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--gold)}
 .gate li b{color:var(--ink);font-weight:600}
 .gate .btn{width:100%;margin-top:4px}
+.notrans *{transition:none!important}
 </style>
 </head>
 <body>
@@ -109,6 +116,7 @@ canvas#mug{width:100%;height:100%;display:block}
     <div class="timer"><div class="t" id="timer">0.0</div><div class="lbl" id="timerLbl">seconds</div></div>
   </div>
   <div class="mug-wrap"><canvas id="mug"></canvas></div>
+  <div class="caption-slot"><div class="caption" id="caption"></div></div>
   <div class="rating-chip"><span class="chip" id="chip"></span></div>
 </div>
 
@@ -149,15 +157,24 @@ canvas#mug{width:100%;height:100%;display:block}
 <script>
 (() => {
   // ---------- constants ----------
-  const FULL_POUR_SECONDS = 120;           // 2:00 hold -> 100% pint
-  const MAX_HOLD_SECONDS = 120;            // hard cap: the hold auto-ends here
+  const FULL_POUR_SECONDS = 60;            // 1:00 hold -> 100% pint
+  const MAX_HOLD_SECONDS = 60;             // hard cap: the hold auto-ends here
+  // 8 tiers across the 60s hold - the label climbs live as you hold (one every ~7.5s)
   const TIERS = [
-    { min: 90, name: 'ATHLETIC',      quip: 'Divers are taking notes. The pint is yours - you earned every drop.' },
-    { min: 60, name: 'EXCELLENT',     quip: 'Serious lungs. The head on that pour is basically a trophy.' },
-    { min: 30, name: 'GOOD',          quip: 'A respectable pint. Solid lungs, solid pour, no notes.' },
-    { min: 0,  name: 'BELOW AVERAGE', quip: 'That is a taster glass at best. Breathe, reset, go again.' },
+    { min: 52, name: 'SUPERHUMAN',    quip: 'Fifty-two seconds and climbing. The pint is full, and so is the legend.' },
+    { min: 45, name: 'ELITE',         quip: 'Forty-five seconds of quiet defiance. The regulars are applauding.' },
+    { min: 38, name: 'ATHLETIC',      quip: 'Divers are taking notes. You earned every drop of that.' },
+    { min: 30, name: 'EXCELLENT',     quip: 'Serious lungs. The head on that pour is basically a trophy.' },
+    { min: 23, name: 'VERY GOOD',     quip: 'Well past polite. The table is starting to watch.' },
+    { min: 15, name: 'GOOD',          quip: 'A respectable pint. Solid lungs, solid pour, no notes.' },
+    { min: 8,  name: 'AVERAGE',       quip: 'A half-pint effort. The glass believes in you, though.' },
+    { min: 0,  name: 'BELOW AVERAGE', quip: 'A taster glass at best. Breathe, reset, go again.' },
   ];
-  const CAP_QUIP = 'Two full minutes - the pint literally cannot get fuller. This is the ceiling, and you hit it.';
+  const CAP_QUIP = 'One full minute - the pint literally cannot get fuller. This is the ceiling, and you hit it.';
+  const CAPTIONS = [
+    { at: 25, text: 'Steady now - the first sip is already yours.' },
+    { at: 50, text: 'Most people have let go by now. Not you.' },
+  ];
   const ORBIT_SECONDS = 8;                 // one revolution of the pacing ball
 
   // ---------- dom ----------
@@ -165,6 +182,7 @@ canvas#mug{width:100%;height:100%;display:block}
   const timerEl = document.getElementById('timer');
   const timerLbl = document.getElementById('timerLbl');
   const chip = document.getElementById('chip');
+  const captionEl = document.getElementById('caption');
   const holdBtn = document.getElementById('holdBtn');
   const result = document.getElementById('result');
   const pbEl = document.getElementById('pb');
@@ -174,11 +192,12 @@ canvas#mug{width:100%;height:100%;display:block}
   let holding = false, startT = 0, elapsed = 0, best = +(localStorage.getItem('hmb_best') || 0);
   let fill = 0;                            // 0..1 current pour
   let lastChipTier = null;
+  let nextCaption = 0, captionTimer = null;
 
   function renderPB(){ pbEl.innerHTML = best > 0 ? 'PB <b>' + best.toFixed(1) + 's</b>' : ''; }
   renderPB();
 
-  // ---------- audio (synthesized ASMR) ----------
+  // ---------- audio (synthesized pour ASMR only) ----------
   let AC = null, master, pourNodes = null;
   function audio(){
     if (AC) return AC;
@@ -192,197 +211,289 @@ canvas#mug{width:100%;height:100%;display:block}
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     return buf;
   }
-  function playCrack(){
-    const ctx = audio(), t = ctx.currentTime;
-    // cap pop: short bright click
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.type = 'square'; o.frequency.setValueAtTime(2200, t); o.frequency.exponentialRampToValueAtTime(300, t + .03);
-    g.gain.setValueAtTime(.35, t); g.gain.exponentialRampToValueAtTime(.001, t + .05);
-    o.connect(g).connect(master); o.start(t); o.stop(t + .06);
-    // bottle hiss release
-    const n = ctx.createBufferSource(); n.buffer = noiseBuffer(.4);
-    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 5200; bp.Q.value = .8;
-    const ng = ctx.createGain(); ng.gain.setValueAtTime(.001, t); ng.gain.exponentialRampToValueAtTime(.5, t + .02);
-    ng.gain.exponentialRampToValueAtTime(.001, t + .38);
-    n.connect(bp).connect(ng).connect(master); n.start(t); n.stop(t + .4);
-    // glass clink
-    const s = ctx.createOscillator(), sg = ctx.createGain();
-    s.type = 'sine'; s.frequency.value = 2600;
-    sg.gain.setValueAtTime(.12, t + .01); sg.gain.exponentialRampToValueAtTime(.001, t + .3);
-    s.connect(sg).connect(master); s.start(t + .01); s.stop(t + .32);
-  }
   function startPourSound(){
     const ctx = audio(), t = ctx.currentTime;
-    // glug/gurgle body: mid-band noise with a wobbling filter - liquid, no low rumble
+    // glug body: mid-band noise, steady - no frequency sweep
     const body = ctx.createBufferSource(); body.buffer = noiseBuffer(2); body.loop = true;
-    const lp = ctx.createBiquadFilter(); lp.type = 'bandpass'; lp.frequency.value = 1400; lp.Q.value = 1.1;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = .7;
     const bg = ctx.createGain(); bg.gain.value = 0;
-    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 8.5;
-    const lfoG = ctx.createGain(); lfoG.gain.value = 450;
-    lfo.connect(lfoG).connect(lp.frequency);
+    // gentle amplitude flutter only (slow, subtle - not a sweep)
+    const lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 1.6;
+    const lfoG = ctx.createGain(); lfoG.gain.value = .05;
+    lfo.connect(lfoG).connect(bg.gain);
     // fizz: bright noise
     const fizz = ctx.createBufferSource(); fizz.buffer = noiseBuffer(2); fizz.loop = true;
-    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 4800;
+    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 5200;
     const fg = ctx.createGain(); fg.gain.value = 0;
-    body.connect(lp).connect(bg).connect(master);
+    body.connect(bp).connect(bg).connect(master);
     fizz.connect(hp).connect(fg).connect(master);
     body.start(t); fizz.start(t); lfo.start(t);
-    bg.gain.linearRampToValueAtTime(.35, t + .25);
-    fg.gain.linearRampToValueAtTime(.13, t + .6);
+    bg.gain.linearRampToValueAtTime(.22, t + .3);
+    fg.gain.linearRampToValueAtTime(.12, t + .7);
     pourNodes = { body, fizz, lfo, bg, fg, hp };
   }
   function setFrothiness(x){ // 0..1 as glass nears full -> more fizz, softer body
     if (!pourNodes || !AC) return;
     const t = AC.currentTime;
-    pourNodes.fg.gain.setTargetAtTime(.10 + x * .30, t, .15);
-    pourNodes.hp.frequency.setTargetAtTime(4800 - x * 1800, t, .2);
-    pourNodes.bg.gain.setTargetAtTime(.35 - x * .18, t, .2);
+    pourNodes.fg.gain.setTargetAtTime(.10 + x * .26, t, .15);
+    pourNodes.hp.frequency.setTargetAtTime(5200 - x * 1600, t, .2);
+    pourNodes.bg.gain.setTargetAtTime(.22 - x * .10, t, .2);
   }
   function stopPourSound(){
     if (!pourNodes) return;
     const t = AC.currentTime, p = pourNodes; pourNodes = null;
-    p.bg.gain.setTargetAtTime(0, t, .08); p.fg.gain.setTargetAtTime(0, t, .25);
+    p.bg.gain.setTargetAtTime(0, t, .08); p.fg.gain.setTargetAtTime(0, t, .2);
     setTimeout(() => { try { p.body.stop(); p.fizz.stop(); p.lfo.stop(); } catch(e){} }, 900);
-    // settling froth hiss tail
-    const ctx = audio(), n = ctx.createBufferSource(); n.buffer = noiseBuffer(1.4);
-    const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3800;
-    const g = ctx.createGain(); g.gain.setValueAtTime(.001, t); g.gain.exponentialRampToValueAtTime(.22, t + .12);
-    g.gain.exponentialRampToValueAtTime(.001, t + 1.3);
-    n.connect(hp).connect(g).connect(master); n.start(t); n.stop(t + 1.4);
   }
 
   // ---------- mug rendering ----------
   const cv = document.getElementById('mug'), cx2 = cv.getContext('2d');
   let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let foamTex = null, mg = null;
+  function sr(i){ const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+  function makeFoamTex(){
+    foamTex = document.createElement('canvas'); foamTex.width = foamTex.height = 140;
+    const c = foamTex.getContext('2d');
+    c.fillStyle = '#f7eed6'; c.fillRect(0, 0, 140, 140);
+    for (let i = 0; i < 420; i++){
+      const x = Math.random() * 140, y = Math.random() * 140, r = .5 + Math.random() * 1.8;
+      const dark = Math.random() < .35;
+      c.fillStyle = dark ? 'rgba(190,140,60,' + (0.10 + Math.random() * .15) + ')'
+                         : 'rgba(255,252,240,' + (0.20 + Math.random() * .30) + ')';
+      c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+    }
+  }
   function sizeCanvas(){
     const r = cv.getBoundingClientRect();
     W = r.width; H = r.height;
     cv.width = W * DPR; cv.height = H * DPR;
     cx2.setTransform(DPR, 0, 0, DPR, 0, 0);
+    makeFoamTex();
+    mg = null;
   }
   new ResizeObserver(sizeCanvas).observe(cv);
 
-  // mug geometry (in unit space, mug area)
-  function mugPath(ctx, x, y, w, h){
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    ctx.lineTo(x + w, y);
-    ctx.lineTo(x + w * .92, y + h);         // slight taper
-    ctx.quadraticCurveTo(x + w * .9, y + h + 6, x + w * .82, y + h + 6);
-    ctx.lineTo(x + w * .18, y + h + 6);
-    ctx.quadraticCurveTo(x + w * .1, y + h + 6, x + w * .08, y + h);
-    ctx.closePath();
+  function geom(){
+    const mw = W * .6, mh = H * .78, mx = (W - mw) / 2, my = H * .07;
+    const wt = Math.max(4, mw * .05), baseH = mh * .12;
+    const bw = mw * .94, bx = mx + (mw - bw) / 2, by = my + mh;
+    const inner = { x: mx + wt, y: my + wt * 1.5, w: mw - 2 * wt, h: mh - wt * 1.5 - baseH };
+    mg = { mw, mh, mx, my, wt, baseH, bw, bx, by, inner };
   }
+  function outerPath(c){
+    const { mw, my, bw, bx, by } = mg, r = bw * .12;
+    c.beginPath();
+    c.moveTo(mg.mx, my); c.lineTo(mg.mx + mw, my);
+    c.lineTo(bx + bw, by - r); c.quadraticCurveTo(bx + bw, by, bx + bw - r, by);
+    c.lineTo(bx + r, by); c.quadraticCurveTo(bx, by, bx, by - r);
+    c.closePath();
+  }
+  function innerPath(c){
+    const { inner } = mg, r = inner.w * .09, x = inner.x, y = inner.y, w = inner.w, h = inner.h;
+    c.beginPath();
+    c.moveTo(x, y); c.lineTo(x + w, y);
+    c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r);
+    c.closePath();
+  }
+
   const bubbles = [];
-  function spawnBubbles(n, beerRect){
-    for (let i = 0; i < n; i++){
-      bubbles.push({
-        x: beerRect.x + Math.random() * beerRect.w,
-        y: beerRect.y + beerRect.h - Math.random() * 12,
-        r: .8 + Math.random() * 2.4,
-        v: 14 + Math.random() * 30,
-        drift: (Math.random() - .5) * 8,
-      });
-    }
-  }
+  const streams = [.16, .33, .5, .67, .84];
   let pourStreamPhase = 0;
 
   function draw(ts){
+    if (!mg) geom();
     cx2.clearRect(0, 0, W, H);
-    const mw = W * .62, mh = H * .8, mx = (W - mw) / 2, my = H * .06;
+    const { mw, mh, mx, my, wt, baseH, bx, bw, by, inner } = mg;
 
-    // handle
-    cx2.strokeStyle = 'rgba(239,233,220,.28)'; cx2.lineWidth = W * .028; cx2.lineCap = 'round';
-    cx2.beginPath();
-    cx2.arc(mx + mw + W * .10, my + mh * .42, W * .11, -Math.PI * .55, Math.PI * .55);
-    cx2.stroke();
+    const headH = fill > .02 ? Math.min(inner.h * .13, 7 + fill * inner.h * .13) : 0;
+    const beerH = Math.max(0, (inner.h - headH) * Math.min(fill * 1.03, 1));
+    const beerTop = inner.y + inner.h - beerH;
+    const foamTop = beerTop - headH;
 
-    const inner = { x: mx + 5, y: my + 8, w: mw - 10, h: mh - 12 };
-    const headH = fill > .02 ? Math.min(inner.h * .10, 8 + fill * inner.h * .10) : 0;
-    const beerH = Math.max(0, (inner.h - headH) * Math.min(fill * 1.04, 1));
-    const beerRect = { x: inner.x, y: inner.y + inner.h - beerH, w: inner.w, h: beerH };
+    // ground shadow
+    const sh = cx2.createRadialGradient(mx + mw / 2, by + 9, 4, mx + mw / 2, by + 9, mw * .7);
+    sh.addColorStop(0, 'rgba(0,0,0,.42)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
+    cx2.fillStyle = sh;
+    cx2.beginPath(); cx2.ellipse(mx + mw / 2, by + 9, mw * .7, 10, 0, 0, 7); cx2.fill();
+
+    // handle (behind the glass)
+    const hx = mx + mw + W * .015, hy = my + mh * .44, hr = W * .105;
+    cx2.lineCap = 'round';
+    cx2.strokeStyle = 'rgba(200,220,240,.13)'; cx2.lineWidth = wt * 2.4;
+    cx2.beginPath(); cx2.arc(hx + hr * .4, hy, hr, -Math.PI * .6, Math.PI * .6); cx2.stroke();
+    cx2.strokeStyle = 'rgba(255,255,255,.20)'; cx2.lineWidth = wt * .8;
+    cx2.beginPath(); cx2.arc(hx + hr * .4 + wt * .5, hy, hr * .86, -Math.PI * .5, Math.PI * .5); cx2.stroke();
+
+    // ---- contents, clipped to the inner glass ----
+    cx2.save(); innerPath(cx2); cx2.clip();
+
+    // back glass tint
+    cx2.fillStyle = 'rgba(10,8,4,.32)'; cx2.fillRect(inner.x, inner.y, inner.w, inner.h);
 
     // beer body
     if (beerH > 0){
-      const g = cx2.createLinearGradient(0, beerRect.y, 0, beerRect.y + beerRect.h);
-      g.addColorStop(0, '#ffd45e'); g.addColorStop(.35, '#f5b02e'); g.addColorStop(1, '#a8630b');
+      const g = cx2.createLinearGradient(0, beerTop, 0, beerTop + beerH);
+      g.addColorStop(0, '#ffd76a'); g.addColorStop(.4, '#f0a41f'); g.addColorStop(1, '#7a4204');
       cx2.fillStyle = g;
+      const amp = holding ? 2.4 : 1.1;
       cx2.beginPath();
-      // wavy top surface
-      const surf = beerRect.y, amp = holding ? 2.2 : 1.1;
-      cx2.moveTo(beerRect.x, surf);
-      for (let px = 0; px <= beerRect.w; px += 6)
-        cx2.lineTo(beerRect.x + px, surf + Math.sin(px * .09 + ts * .004) * amp);
-      cx2.lineTo(beerRect.x + beerRect.w, beerRect.y + beerRect.h);
-      cx2.lineTo(beerRect.x, beerRect.y + beerRect.h);
+      cx2.moveTo(inner.x, beerTop + 4);
+      for (let px = 0; px <= inner.w; px += 5)
+        cx2.lineTo(inner.x + px, beerTop + 4 + Math.sin(px * .09 + ts * .004) * amp);
+      cx2.lineTo(inner.x + inner.w, inner.y + inner.h);
+      cx2.lineTo(inner.x, inner.y + inner.h);
       cx2.closePath(); cx2.fill();
-      // glass glare on beer
-      cx2.fillStyle = 'rgba(255,255,255,.07)';
-      cx2.fillRect(beerRect.x + beerRect.w * .12, beerRect.y + 4, beerRect.w * .1, beerRect.h - 8);
+      // meniscus light band on the surface
+      cx2.fillStyle = 'rgba(255,230,160,.30)';
+      cx2.beginPath();
+      cx2.moveTo(inner.x, beerTop + 1);
+      for (let px = 0; px <= inner.w; px += 5)
+        cx2.lineTo(inner.x + px, beerTop + 1 + Math.sin(px * .09 + ts * .004) * amp);
+      for (let px = inner.w; px >= 0; px -= 5)
+        cx2.lineTo(inner.x + px, beerTop + 5 + Math.sin(px * .09 + ts * .004) * amp);
+      cx2.closePath(); cx2.fill();
+      // backlight glow through the beer
+      const gl = cx2.createRadialGradient(inner.x + inner.w * .5, beerTop + beerH * .55, 6,
+                                          inner.x + inner.w * .5, beerTop + beerH * .55, beerH * .95);
+      gl.addColorStop(0, 'rgba(255,214,110,.34)'); gl.addColorStop(1, 'rgba(255,214,110,0)');
+      cx2.fillStyle = gl; cx2.fillRect(inner.x, beerTop, inner.w, beerH);
+      // edge absorption darkening
+      const side = cx2.createLinearGradient(inner.x, 0, inner.x + inner.w, 0);
+      side.addColorStop(0, 'rgba(60,30,0,.30)'); side.addColorStop(.18, 'rgba(60,30,0,0)');
+      side.addColorStop(.82, 'rgba(60,30,0,0)'); side.addColorStop(1, 'rgba(60,30,0,.30)');
+      cx2.fillStyle = side; cx2.fillRect(inner.x, beerTop, inner.w, beerH);
     }
 
-    // bubbles
-    if (beerH > 4){
-      if (holding && Math.random() < .5) spawnBubbles(3, beerRect);
-      cx2.fillStyle = 'rgba(255,240,200,.5)';
+    // bubbles: nucleation streams rising off the base
+    if (beerH > 6){
+      if (bubbles.length < 170){
+        for (let s = 0; s < streams.length; s++){
+          if (Math.random() < .32) bubbles.push({
+            x: inner.x + inner.w * streams[s] + (Math.random() - .5) * 6,
+            y: inner.y + inner.h - 4,
+            r: .7 + Math.random() * 2.0,
+            v: 16 + Math.random() * 34,
+            ph: Math.random() * 7,
+          });
+        }
+      }
       for (let i = bubbles.length - 1; i >= 0; i--){
         const b = bubbles[i];
-        b.y -= b.v * .016; b.x += Math.sin(ts * .003 + b.r * 10) * .3 + b.drift * .016;
-        if (b.y < beerRect.y + 2 || b.x < beerRect.x || b.x > beerRect.x + beerRect.w){ bubbles.splice(i, 1); continue; }
+        b.y -= b.v * .016; b.x += Math.sin(ts * .004 + b.ph) * .35;
+        if (b.y < beerTop + 3){ bubbles.splice(i, 1); continue; }
+        cx2.fillStyle = 'rgba(255,244,205,.5)';
         cx2.beginPath(); cx2.arc(b.x, b.y, b.r, 0, 7); cx2.fill();
+        cx2.fillStyle = 'rgba(255,255,255,.6)';
+        cx2.beginPath(); cx2.arc(b.x - b.r * .3, b.y - b.r * .3, b.r * .32, 0, 7); cx2.fill();
       }
     } else bubbles.length = 0;
 
     // froth head
     if (headH > 0){
-      const fy = inner.y + inner.h - beerH - headH;
-      cx2.fillStyle = '#fdf3d8';
+      const fy = foamTop, fh = headH, ampF = holding ? 3 : 1.6;
       cx2.beginPath();
-      const ampF = holding ? 3 : 1.5;
-      cx2.moveTo(inner.x, fy + headH);
-      cx2.lineTo(inner.x, fy + 6);
+      cx2.moveTo(inner.x, fy + fh);
+      cx2.lineTo(inner.x, fy + 7);
       for (let px = 0; px <= inner.w; px += 8)
-        cx2.arc(inner.x + px + 4, fy + 6 + Math.sin(px * .15 + ts * .003) * ampF * .4, 5.5, Math.PI, 0);
-      cx2.lineTo(inner.x + inner.w, fy + headH);
-      cx2.closePath(); cx2.fill();
-      // froth speckle
-      cx2.fillStyle = 'rgba(201,123,18,.25)';
-      for (let i = 0; i < 10; i++){
-        const sx = inner.x + ((i * 37.7) % inner.w), sy = fy + 3 + ((i * 13.3) % Math.max(headH - 4, 2));
-        cx2.beginPath(); cx2.arc(sx, sy, 1.4, 0, 7); cx2.fill();
-      }
+        cx2.arc(inner.x + px + 4, fy + 7 + Math.sin(px * .15 + ts * .003) * ampF * .4, 5.6, Math.PI, 0);
+      cx2.lineTo(inner.x + inner.w, fy + fh);
+      cx2.closePath();
+      cx2.fillStyle = '#f8efdb'; cx2.fill();
+      cx2.save(); cx2.clip();
+      cx2.globalAlpha = .55; cx2.fillStyle = cx2.createPattern(foamTex, 'repeat');
+      cx2.fillRect(inner.x, fy - 2, inner.w, fh + 4);
+      cx2.globalAlpha = 1;
+      const fs = cx2.createLinearGradient(0, fy + fh * .55, 0, fy + fh);
+      fs.addColorStop(0, 'rgba(160,110,40,0)'); fs.addColorStop(1, 'rgba(160,110,40,.35)');
+      cx2.fillStyle = fs; cx2.fillRect(inner.x, fy, inner.w, fh);
+      cx2.restore();
+    }
+    cx2.restore(); // end inner clip
+
+    // foam dome crowning over the rim when full
+    if (headH > 0 && fill > .96){
+      const dome = inner.w * .11 * Math.min(1, (fill - .96) / .04);
+      cx2.fillStyle = '#faf1dd';
+      cx2.beginPath(); cx2.ellipse(inner.x + inner.w / 2, inner.y + 2, inner.w * .42, dome, 0, Math.PI, 0); cx2.fill();
+      cx2.save();
+      cx2.beginPath(); cx2.ellipse(inner.x + inner.w / 2, inner.y + 2, inner.w * .42, dome, 0, Math.PI, 0); cx2.clip();
+      cx2.globalAlpha = .5; cx2.fillStyle = cx2.createPattern(foamTex, 'repeat');
+      cx2.fillRect(inner.x, inner.y - dome, inner.w, dome + 4);
+      cx2.globalAlpha = 1; cx2.restore();
     }
 
     // pour stream while holding and not full
     if (holding && fill < 1){
       pourStreamPhase += .016;
-      const sx = mx + mw / 2 + Math.sin(pourStreamPhase * 9) * 1.2;
-      const grad = cx2.createLinearGradient(sx, 0, sx, beerRect.y || inner.y + inner.h);
-      grad.addColorStop(0, 'rgba(255,212,94,.0)'); grad.addColorStop(.2, 'rgba(255,212,94,.95)'); grad.addColorStop(1, 'rgba(245,176,46,.95)');
-      cx2.strokeStyle = grad; cx2.lineWidth = 4.5; cx2.lineCap = 'round';
-      cx2.beginPath(); cx2.moveTo(sx, my - H * .02);
-      cx2.lineTo(sx, Math.max(beerRect.y, inner.y) + 2); cx2.stroke();
-      // splash droplets
-      cx2.fillStyle = 'rgba(255,212,94,.8)';
-      for (let i = 0; i < 4; i++){
-        const dx = Math.sin(ts * .01 + i * 2.1) * 8, dy = Math.abs(Math.sin(ts * .008 + i)) * 5;
-        cx2.beginPath(); cx2.arc(sx + dx, Math.max(beerRect.y, inner.y) - dy, 1.6, 0, 7); cx2.fill();
+      const sx = mx + mw / 2 + Math.sin(pourStreamPhase * 7) * 1.4;
+      const targetY = Math.max(headH > 0 ? foamTop + 4 : beerTop + 2, inner.y) + 2;
+      const g2 = cx2.createLinearGradient(0, my - H * .03, 0, targetY);
+      g2.addColorStop(0, 'rgba(255,215,100,0)'); g2.addColorStop(.25, 'rgba(255,215,100,.85)'); g2.addColorStop(1, 'rgba(240,164,31,.95)');
+      cx2.strokeStyle = g2; cx2.lineWidth = 6; cx2.lineCap = 'round';
+      cx2.beginPath(); cx2.moveTo(sx, my - H * .03); cx2.lineTo(sx, targetY); cx2.stroke();
+      cx2.strokeStyle = 'rgba(255,238,180,.8)'; cx2.lineWidth = 2;
+      cx2.beginPath(); cx2.moveTo(sx, my - H * .03 + 4); cx2.lineTo(sx, targetY - 2); cx2.stroke();
+      cx2.fillStyle = 'rgba(255,222,140,.85)';
+      for (let i = 0; i < 5; i++){
+        const dx = Math.sin(ts * .012 + i * 2.1) * 9, dy = Math.abs(Math.sin(ts * .009 + i * 1.3)) * 6;
+        cx2.beginPath(); cx2.arc(sx + dx, targetY - dy, 1.4 + sr(i) * 1.2, 0, 7); cx2.fill();
       }
     }
 
-    // glass outline
-    cx2.strokeStyle = 'rgba(239,233,220,.4)'; cx2.lineWidth = 2.5;
-    mugPath(cx2, mx, my, mw, mh); cx2.stroke();
-    // glass shine
-    cx2.strokeStyle = 'rgba(255,255,255,.10)'; cx2.lineWidth = mw * .09;
-    cx2.beginPath(); cx2.moveTo(mx + mw * .16, my + 10); cx2.lineTo(mx + mw * .22, my + mh - 8); cx2.stroke();
+    // ---- front glass, clipped to the outer silhouette ----
+    cx2.save(); outerPath(cx2); cx2.clip();
+    // vertical flutes
+    const nf = 9;
+    for (let i = 0; i < nf; i++){
+      const fx = mx + mw * i / nf, fw = mw / nf;
+      const lg = cx2.createLinearGradient(fx, 0, fx + fw, 0);
+      lg.addColorStop(0, 'rgba(255,255,255,0)');
+      lg.addColorStop(.5, i % 2 ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.09)');
+      lg.addColorStop(1, 'rgba(255,255,255,0)');
+      cx2.fillStyle = lg; cx2.fillRect(fx, my, fw, mh);
+    }
+    // broad soft specular
+    const sp = cx2.createLinearGradient(mx + mw * .10, 0, mx + mw * .30, 0);
+    sp.addColorStop(0, 'rgba(255,255,255,0)'); sp.addColorStop(.5, 'rgba(255,255,255,.13)'); sp.addColorStop(1, 'rgba(255,255,255,0)');
+    cx2.fillStyle = sp; cx2.fillRect(mx + mw * .10, my, mw * .20, mh);
+    // narrow bright specular
+    const sp2 = cx2.createLinearGradient(mx + mw * .68, 0, mx + mw * .78, 0);
+    sp2.addColorStop(0, 'rgba(255,255,255,0)'); sp2.addColorStop(.5, 'rgba(255,255,255,.17)'); sp2.addColorStop(1, 'rgba(255,255,255,0)');
+    cx2.fillStyle = sp2; cx2.fillRect(mx + mw * .68, my, mw * .10, mh * .75);
+    // thick base band + caustic line
+    const bb = cx2.createLinearGradient(0, by - baseH, 0, by);
+    bb.addColorStop(0, 'rgba(255,255,255,.20)'); bb.addColorStop(.35, 'rgba(180,200,220,.07)'); bb.addColorStop(1, 'rgba(0,0,0,.30)');
+    cx2.fillStyle = bb; cx2.fillRect(bx, by - baseH, bw, baseH + 2);
+    cx2.fillStyle = 'rgba(255,255,255,.28)';
+    cx2.fillRect(bx + 4, by - baseH + 1, bw - 8, 1.6);
+    cx2.restore();
+
+    // glass edges + rim
+    cx2.strokeStyle = 'rgba(255,255,255,.13)'; cx2.lineWidth = 5; outerPath(cx2); cx2.stroke();
+    cx2.strokeStyle = 'rgba(235,240,250,.30)'; cx2.lineWidth = 2; outerPath(cx2); cx2.stroke();
+    cx2.strokeStyle = 'rgba(255,255,255,.45)'; cx2.lineWidth = 2;
+    cx2.beginPath(); cx2.ellipse(mx + mw / 2, my, mw / 2, mw * .05, 0, Math.PI * 1.05, Math.PI * 1.95); cx2.stroke();
+    cx2.strokeStyle = 'rgba(255,255,255,.15)';
+    cx2.beginPath(); cx2.ellipse(mx + mw / 2, my, mw / 2, mw * .05, 0, Math.PI * .05, Math.PI * .95); cx2.stroke();
 
     // condensation
-    if (fill > .1){
-      cx2.fillStyle = 'rgba(220,235,255,.18)';
-      for (let i = 0; i < 7; i++){
-        const cxp = mx + 6 + ((i * 53.3) % (mw - 12)), cyp = my + 14 + ((i * 71.7) % (mh * .7));
-        cx2.beginPath(); cx2.arc(cxp, cyp, 1.2 + (i % 3) * .6, 0, 7); cx2.fill();
+    if (fill > .08){
+      for (let i = 0; i < 16; i++){
+        const dx = mx + mw * .12 + sr(i * 3.1) * mw * .76;
+        const dy = my + mh * .18 + sr(i * 7.7) * mh * .62;
+        const r = .9 + sr(i * 13.3) * 1.7;
+        const dg = cx2.createRadialGradient(dx - r * .3, dy - r * .3, .2, dx, dy, r);
+        dg.addColorStop(0, 'rgba(240,248,255,.5)'); dg.addColorStop(1, 'rgba(200,220,240,.12)');
+        cx2.fillStyle = dg; cx2.beginPath(); cx2.arc(dx, dy, r, 0, 7); cx2.fill();
+      }
+      for (let i = 0; i < 2; i++){
+        const dx = mx + mw * (.3 + .35 * i) + Math.sin(i * 9) * 4;
+        const dy = my + mh * .2 + ((ts * .008 + i * 40) % (mh * .55));
+        cx2.strokeStyle = 'rgba(210,228,245,.14)'; cx2.lineWidth = 1.4;
+        cx2.beginPath(); cx2.moveTo(dx, dy - 14); cx2.lineTo(dx, dy); cx2.stroke();
+        cx2.fillStyle = 'rgba(235,245,255,.4)';
+        cx2.beginPath(); cx2.arc(dx, dy, 1.6, 0, 7); cx2.fill();
       }
     }
   }
@@ -395,6 +506,18 @@ canvas#mug{width:100%;height:100%;display:block}
     ball.style.transform = 'translate(' + Math.cos(ang) * R + 'px,' + Math.sin(ang) * R + 'px)';
   }
 
+  // ---------- captions ----------
+  function showCaption(text){
+    captionEl.textContent = text;
+    captionEl.classList.add('on');
+    clearTimeout(captionTimer);
+    captionTimer = setTimeout(() => captionEl.classList.remove('on'), 4500);
+  }
+  function hideCaption(){
+    clearTimeout(captionTimer);
+    captionEl.classList.remove('on');
+  }
+
   // ---------- main loop ----------
   function loop(ts){
     if (holding){
@@ -405,6 +528,9 @@ canvas#mug{width:100%;height:100%;display:block}
       setFrothiness(Math.max(0, (fill - .8) / .2));
       const tier = tierFor(elapsed);
       if (tier !== lastChipTier){ lastChipTier = tier; showChip(tier); }
+      if (nextCaption < CAPTIONS.length && elapsed >= CAPTIONS[nextCaption].at){
+        showCaption(CAPTIONS[nextCaption].text); nextCaption++;
+      }
       timerEl.textContent = elapsed.toFixed(1);
     }
     orbit(ts); draw(ts);
@@ -437,16 +563,18 @@ canvas#mug{width:100%;height:100%;display:block}
     if (e.cancelable) e.preventDefault();
     audio(); if (AC.state === 'suspended') AC.resume();
     holding = true; startT = performance.now(); elapsed = 0; fill = 0; lastChipTier = null;
+    nextCaption = 0; hideCaption();
     chip.classList.remove('on');
     timerLbl.textContent = 'holding';
     holdBtn.classList.add('holding'); holdBtn.textContent = 'Pouring…';
-    playCrack(); startPourSound();
+    startPourSound();
     flashHoldNote();
   }
   function end(){
     if (!holding) return;
     holding = false;
     stopPourSound();
+    hideCaption();
     holdBtn.classList.remove('holding'); holdBtn.textContent = 'Hold to pour';
     timerLbl.textContent = 'seconds';
     finish();
@@ -487,6 +615,19 @@ canvas#mug{width:100%;height:100%;display:block}
     }
     toast.classList.add('on'); setTimeout(() => toast.classList.remove('on'), 1600);
   });
+
+  // ---------- demo hook (?demo=<seconds>) for visual verification ----------
+  const demo = parseFloat(new URLSearchParams(location.search).get('demo') || '0');
+  if (demo > 0){
+    document.documentElement.classList.add('notrans');
+    gate.style.display = 'none';
+    holding = true; startT = performance.now() - demo * 1000; elapsed = demo;
+    fill = Math.min(demo / FULL_POUR_SECONDS, 1);
+    timerLbl.textContent = 'holding';
+    holdBtn.classList.add('holding'); holdBtn.textContent = 'Pouring…';
+    nextCaption = CAPTIONS.findIndex(c => c.at > demo);
+    if (nextCaption < 0) nextCaption = CAPTIONS.length;
+  }
 
   requestAnimationFrame(loop);
 })();
