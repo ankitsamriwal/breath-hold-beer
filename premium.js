@@ -245,6 +245,7 @@ async function handleCheckoutReturn(){
     await refreshProfile();
     if (profile?.paid){
       paintHeader();
+      if (!profile.display_name){ const n = await nameModal(); if (n) profile.display_name = n; }
       openModal(`<h2>You're in ✦</h2><div class="sub">Premium unlocked, forever. Pick your glass and your beer - your next pour counts.</div>
         <button class="btn primary" id="pickNow" style="width:100%">Choose my pour</button>`);
       $('pickNow').addEventListener('click', pickerModal);
