@@ -100,13 +100,72 @@ canvas#mug{width:100%;height:100%;display:block}
 .gate li::before{content:'';position:absolute;left:0;top:7px;width:6px;height:6px;border-radius:50%;background:var(--gold)}
 .gate li b{color:var(--ink);font-weight:600}
 .gate .btn{width:100%;margin-top:4px}
+
+/* premium chrome */
+.hnav{display:flex;gap:8px;align-items:center}
+.hbtn{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:6px 12px;background:transparent;cursor:pointer;transition:.2s}
+.hbtn.gold{color:var(--gold);border-color:rgba(245,176,46,.4)}
+.hbtn:active{transform:scale(.95)}
+.r-extra{margin-top:8px;min-height:20px;font-size:12.5px;color:var(--dim);line-height:1.5}
+.r-extra b{color:var(--gold)}
+.r-extra .attest{display:inline-flex;align-items:center;gap:6px;font-family:'Space Mono',monospace;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:#7fce8a;border:1px solid rgba(127,206,138,.35);
+  border-radius:999px;padding:4px 12px}
+.foot-links{font-size:10.5px;color:var(--dim);display:flex;gap:14px;align-items:center}
+.foot-links a,.foot-links span{color:var(--dim);text-decoration:none;cursor:pointer}
+.foot-links a:hover,.foot-links span:hover{color:var(--gold)}
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(10,9,6,.94);backdrop-filter:blur(10px);
+  display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .35s;z-index:40;padding:20px}
+.modal.on{opacity:1;pointer-events:auto}
+.modal .card{width:min(88vw,400px);max-height:86vh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);
+  border-radius:24px;padding:28px 24px 22px;display:flex;flex-direction:column;gap:14px;
+  transform:translateY(14px) scale(.97);transition:transform .4s cubic-bezier(.2,.9,.3,1.15)}
+.modal.on .card{transform:none}
+.modal h2{font-size:19px;font-weight:700;letter-spacing:-.01em;color:var(--cream)}
+.modal .sub{font-size:13px;color:var(--dim);line-height:1.55}
+.modal .x{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--dim);font-size:20px;cursor:pointer;padding:6px}
+.modal .card-wrap{position:relative}
+.field{width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:#0d0b06;color:var(--ink);
+  font-family:'Space Grotesk',sans-serif;font-size:14px;outline:none}
+.field:focus{border-color:rgba(245,176,46,.5)}
+.price-line{display:flex;align-items:baseline;justify-content:center;gap:8px;margin:2px 0}
+.price-line .amount{font-size:34px;font-weight:700;background:linear-gradient(120deg,var(--gold-hi),var(--gold) 55%,var(--amber));
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.price-line .per{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.perk{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--ink);line-height:1.45}
+.perk::before{content:'';flex:0 0 auto;margin-top:6px;width:6px;height:6px;border-radius:50%;background:var(--gold)}
+.agecheck{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--dim);line-height:1.5;cursor:pointer}
+.agecheck input{margin-top:2px;accent-color:var(--gold);width:16px;height:16px;flex:0 0 auto}
+/* picker grid */
+.pick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pick{border:1px solid var(--line);border-radius:16px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  background:transparent;cursor:pointer;transition:.2s;color:var(--ink)}
+.pick.on{border-color:var(--gold);background:rgba(245,176,46,.07)}
+.pick .sw{width:34px;height:44px;border-radius:6px 6px 10px 10px;border:1px solid rgba(255,255,255,.18)}
+.pick .nm{font-size:12px;font-weight:600;letter-spacing:.06em}
+.pick .ds{font-size:10px;color:var(--dim);letter-spacing:.04em}
+/* leaderboard */
+.lb-row{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid var(--line)}
+.lb-row:last-child{border-bottom:none}
+.lb-rank{font-family:'Space Mono',monospace;font-size:11px;color:var(--dim);width:22px;text-align:right;flex:0 0 auto}
+.lb-rank.top{color:var(--gold)}
+.lb-main{flex:1;min-width:0}
+.lb-name{font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-meta{font-size:10.5px;color:var(--dim);font-family:'Space Mono',monospace;letter-spacing:.04em}
+.lb-time{font-family:'Space Mono',monospace;font-size:14px;color:var(--cream);flex:0 0 auto}
+.lb-wit{flex:0 0 auto;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;
+  border:1px solid var(--line);border-radius:999px;padding:5px 10px;background:transparent;color:var(--dim);cursor:pointer}
+.lb-wit.seen{border-color:rgba(127,206,138,.4);color:#7fce8a}
+.lb-empty{font-size:12.5px;color:var(--dim);text-align:center;padding:18px 0;line-height:1.6}
 .notrans *{transition:none!important}
 </style>
 </head>
 <body>
 <header>
   <div class="wordmark">HOLD <em>MY</em> BEER</div>
-  <div class="pb" id="pb"></div>
+  <div class="hnav"><div class="pb" id="pb"></div><button class="hbtn" id="boardBtn">Board</button><button class="hbtn gold" id="premBtn">Premium</button></div>
 </header>
 
 <div class="stage" id="stage">
@@ -124,6 +183,7 @@ canvas#mug{width:100%;height:100%;display:block}
   <button class="hold-btn" id="holdBtn">Hold to pour</button>
   <div class="safety">Never hyperventilate before a breath hold, and never do this in or near water. Stop the second you feel dizzy. Measures CO2 tolerance - not a medical or fitness test. Beer-themed toy: the pint is virtual, but if you pour a real one, legal drinking age applies.</div>
   <div class="hold-note" id="holdNote">Not in water. Stop if dizzy.</div>
+  <div class="foot-links"><a href="privacy.html">Privacy</a><span id="authLink">Sign in</span></div>
 </div>
 
 <div class="gate" id="gate">
@@ -146,12 +206,14 @@ canvas#mug{width:100%;height:100%;display:block}
     <div class="time" id="rTime">0.0s hold</div>
     <div class="fill" id="rFill">0% of the pint</div>
     <div class="quip" id="rQuip"></div>
+    <div class="r-extra" id="rExtra"></div>
     <div class="actions">
       <button class="btn" id="shareBtn">Share</button>
       <button class="btn primary" id="againBtn">Go again</button>
     </div>
   </div>
 </div>
+<div class="modal" id="modal"><div class="card-wrap"><button class="x" id="modalX">&times;</button><div class="card" id="modalCard"></div></div></div>
 <div class="toast" id="toast">Copied</div>
 
 <script>
@@ -246,15 +308,47 @@ canvas#mug{width:100%;height:100%;display:block}
     setTimeout(() => { try { p.body.stop(); p.fizz.stop(); p.lfo.stop(); } catch(e){} }, 900);
   }
 
+  // ---------- glass & beer style system ----------
+  const GLASS_DEFS = {
+    mug:   { label: 'Mug',   handle: true,  bot: .94, bands: false },
+    pint:  { label: 'Pint',  handle: false, bot: .72, bands: false },
+    stein: { label: 'Stein', handle: true,  bot: .97, bands: true  },
+    tulip: { label: 'Tulip', handle: false, stem: true            },
+  };
+  const BEER_DEFS = {
+    lager: { label: 'Lager', body: ['#ffd76a','#f0a41f','#7a4204'], meniscus: 'rgba(255,230,160,.30)',
+             glowA: 'rgba(255,214,110,.34)', glowB: 'rgba(255,214,110,0)', foamTex: '#f7eed6', foamHead: '#f8efdb', dome: '#faf1dd',
+             streamA: 'rgba(255,215,100,', streamB: 'rgba(240,164,31,', streamHi: 'rgba(255,238,180,', splash: 'rgba(255,222,140,' },
+    ipa:   { label: 'IPA',   body: ['#ffc26a','#d97e1a','#4d2602'], meniscus: 'rgba(255,214,150,.30)',
+             glowA: 'rgba(255,196,90,.32)',  glowB: 'rgba(255,196,90,0)',  foamTex: '#f2e6cd', foamHead: '#f4e9d2', dome: '#f6ecd6',
+             streamA: 'rgba(255,196,90,',  streamB: 'rgba(217,126,26,',  streamHi: 'rgba(255,228,170,', splash: 'rgba(255,208,130,' },
+    stout: { label: 'Stout', body: ['#5e3a1c','#2a1508','#0b0502'], meniscus: 'rgba(150,100,60,.35)',
+             glowA: 'rgba(200,130,70,.28)', glowB: 'rgba(200,130,70,0)',  foamTex: '#d9b98c', foamHead: '#dcbf95', dome: '#e0c49b',
+             streamA: 'rgba(90,55,25,',    streamB: 'rgba(40,20,8,',    streamHi: 'rgba(160,110,70,', splash: 'rgba(140,95,55,' },
+    wheat: { label: 'Wheat', body: ['#ffec9f','#efc24d','#8a5f0e'], meniscus: 'rgba(255,240,180,.32)',
+             glowA: 'rgba(255,228,140,.32)', glowB: 'rgba(255,228,140,0)', foamTex: '#fbf5e2', foamHead: '#fcf7e6', dome: '#fdf8ea',
+             streamA: 'rgba(255,230,130,', streamB: 'rgba(239,194,77,', streamHi: 'rgba(255,246,200,', splash: 'rgba(255,236,160,' },
+  };
+  let style = { glass: 'mug', beer: 'lager' };
+  try { Object.assign(style, JSON.parse(localStorage.getItem('hmb_style_v1') || '{}')); } catch(e){}
+  if (!GLASS_DEFS[style.glass]) style.glass = 'mug';
+  if (!BEER_DEFS[style.beer]) style.beer = 'lager';
+
   // ---------- mug rendering ----------
   const cv = document.getElementById('mug'), cx2 = cv.getContext('2d');
   let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
   let foamTex = null, mg = null;
+  window.HMB_SET_STYLE = (glass, beer) => {
+    if (GLASS_DEFS[glass]) style.glass = glass;
+    if (BEER_DEFS[beer]) style.beer = beer;
+    localStorage.setItem('hmb_style_v1', JSON.stringify(style));
+    mg = null; foamTex = null;
+  };
   function sr(i){ const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
   function makeFoamTex(){
     foamTex = document.createElement('canvas'); foamTex.width = foamTex.height = 140;
     const c = foamTex.getContext('2d');
-    c.fillStyle = '#f7eed6'; c.fillRect(0, 0, 140, 140);
+    c.fillStyle = BEER_DEFS[style.beer].foamTex; c.fillRect(0, 0, 140, 140);
     for (let i = 0; i < 420; i++){
       const x = Math.random() * 140, y = Math.random() * 140, r = .5 + Math.random() * 1.8;
       const dark = Math.random() < .35;
@@ -274,27 +368,66 @@ canvas#mug{width:100%;height:100%;display:block}
   new ResizeObserver(sizeCanvas).observe(cv);
 
   function geom(){
-    const mw = W * .6, mh = H * .78, mx = (W - mw) / 2, my = H * .07;
-    const wt = Math.max(4, mw * .05), baseH = mh * .12;
-    const bw = mw * .94, bx = mx + (mw - bw) / 2, by = my + mh;
-    const inner = { x: mx + wt, y: my + wt * 1.5, w: mw - 2 * wt, h: mh - wt * 1.5 - baseH };
-    mg = { mw, mh, mx, my, wt, baseH, bw, bx, by, inner };
+    const g = GLASS_DEFS[style.glass];
+    if (g.stem){
+      // tulip: bulb bowl on a short stem with a round foot
+      const rimW = W * .44, maxW = W * .56, neckW = W * .13;
+      const my = H * .07, bowlH = H * .52;
+      const cxm = W / 2, wt = Math.max(4, rimW * .09);
+      const stemW = W * .05, stemTop = my + bowlH - 2, footY = H * .86, footRx = W * .19;
+      const iw = maxW - 2.6 * wt;
+      const inner = { x: cxm - iw / 2, y: my + wt * 1.5, w: iw, h: bowlH - wt * 1.5 - bowlH * .13 };
+      mg = { g, cxm, rimW, maxW, neckW, my, bowlH, wt, stemW, stemTop, footY, footRx,
+             mw: rimW, mh: bowlH, mx: cxm - rimW / 2, baseH: bowlH * .13,
+             bw: footRx * 2, bx: cxm - footRx, by: footY, inner };
+    } else {
+      const mw = W * .6, mh = H * .78, mx = (W - mw) / 2, my = H * .07;
+      const wt = Math.max(4, mw * .05), baseH = mh * .12;
+      const bw = mw * (g.bot ?? .94), bx = mx + (mw - bw) / 2, by = my + mh;
+      const inner = { x: mx + wt, y: my + wt * 1.5, w: mw - 2 * wt, h: mh - wt * 1.5 - baseH };
+      mg = { g, mw, mh, mx, my, wt, baseH, bw, bx, by, inner };
+    }
   }
   function outerPath(c){
-    const { mw, my, bw, bx, by } = mg, r = bw * .12;
-    c.beginPath();
-    c.moveTo(mg.mx, my); c.lineTo(mg.mx + mw, my);
-    c.lineTo(bx + bw, by - r); c.quadraticCurveTo(bx + bw, by, bx + bw - r, by);
-    c.lineTo(bx + r, by); c.quadraticCurveTo(bx, by, bx, by - r);
-    c.closePath();
+    const g = mg.g;
+    if (g.stem){
+      const { cxm, rimW, maxW, neckW, my, bowlH } = mg, yb = my + bowlH;
+      c.beginPath();
+      c.moveTo(cxm - rimW / 2, my);
+      c.bezierCurveTo(cxm - maxW / 2, my + bowlH * .28, cxm - maxW / 2, my + bowlH * .62, cxm - neckW / 2, yb);
+      c.quadraticCurveTo(cxm, yb + bowlH * .05, cxm + neckW / 2, yb);
+      c.bezierCurveTo(cxm + maxW / 2, my + bowlH * .62, cxm + maxW / 2, my + bowlH * .28, cxm + rimW / 2, my);
+      c.closePath();
+    } else {
+      const { mw, my, bw, bx, by } = mg, r = bw * .12;
+      c.beginPath();
+      c.moveTo(mg.mx, my); c.lineTo(mg.mx + mw, my);
+      c.lineTo(bx + bw, by - r); c.quadraticCurveTo(bx + bw, by, bx + bw - r, by);
+      c.lineTo(bx + r, by); c.quadraticCurveTo(bx, by, bx, by - r);
+      c.closePath();
+    }
   }
   function innerPath(c){
-    const { inner } = mg, r = inner.w * .09, x = inner.x, y = inner.y, w = inner.w, h = inner.h;
-    c.beginPath();
-    c.moveTo(x, y); c.lineTo(x + w, y);
-    c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r);
-    c.closePath();
+    const g = mg.g;
+    if (g.stem){
+      const { cxm, rimW, maxW, neckW, my, bowlH, wt } = mg;
+      const rw = rimW - 2 * wt, mw2 = maxW - 2.6 * wt, nw = Math.max(neckW - wt, 6);
+      const y0 = my + wt * 1.5, h = bowlH - wt * 1.5 - bowlH * .13, yb = y0 + h;
+      c.beginPath();
+      c.moveTo(cxm - rw / 2, y0);
+      c.bezierCurveTo(cxm - mw2 / 2, y0 + h * .28, cxm - mw2 / 2, y0 + h * .62, cxm - nw / 2, yb);
+      c.quadraticCurveTo(cxm, yb + h * .05, cxm + nw / 2, yb);
+      c.bezierCurveTo(cxm + mw2 / 2, y0 + h * .62, cxm + mw2 / 2, y0 + h * .28, cxm + rw / 2, y0);
+      c.closePath();
+    } else {
+      const { inner } = mg, r = inner.w * .09, x = inner.x, y = inner.y, w = inner.w, h = inner.h;
+      const botW = w * (g.bot ?? .94), bx2 = x + (w - botW) / 2;
+      c.beginPath();
+      c.moveTo(x, y); c.lineTo(x + w, y);
+      c.lineTo(bx2 + botW, y + h - r); c.quadraticCurveTo(bx2 + botW, y + h, bx2 + botW - r, y + h);
+      c.lineTo(bx2 + r, y + h); c.quadraticCurveTo(bx2, y + h, bx2, y + h - r);
+      c.closePath();
+    }
   }
 
   const bubbles = [];
@@ -305,6 +438,7 @@ canvas#mug{width:100%;height:100%;display:block}
     if (!mg) geom();
     cx2.clearRect(0, 0, W, H);
     const { mw, mh, mx, my, wt, baseH, bx, bw, by, inner } = mg;
+    const pal = BEER_DEFS[style.beer];
 
     const headH = fill > .02 ? Math.min(inner.h * .13, 7 + fill * inner.h * .13) : 0;
     const beerH = Math.max(0, (inner.h - headH) * Math.min(fill * 1.03, 1));
@@ -317,13 +451,30 @@ canvas#mug{width:100%;height:100%;display:block}
     cx2.fillStyle = sh;
     cx2.beginPath(); cx2.ellipse(mx + mw / 2, by + 9, mw * .7, 10, 0, 0, 7); cx2.fill();
 
-    // handle (behind the glass)
-    const hx = mx + mw + W * .015, hy = my + mh * .44, hr = W * .105;
-    cx2.lineCap = 'round';
-    cx2.strokeStyle = 'rgba(200,220,240,.13)'; cx2.lineWidth = wt * 2.4;
-    cx2.beginPath(); cx2.arc(hx + hr * .4, hy, hr, -Math.PI * .6, Math.PI * .6); cx2.stroke();
-    cx2.strokeStyle = 'rgba(255,255,255,.20)'; cx2.lineWidth = wt * .8;
-    cx2.beginPath(); cx2.arc(hx + hr * .4 + wt * .5, hy, hr * .86, -Math.PI * .5, Math.PI * .5); cx2.stroke();
+    // handle (behind the glass) - mug & stein only
+    if (mg.g.handle){
+      const hx = mx + mw + W * .015, hy = my + mh * .44, hr = W * .105;
+      cx2.lineCap = 'round';
+      cx2.strokeStyle = 'rgba(200,220,240,.13)'; cx2.lineWidth = wt * 2.4;
+      cx2.beginPath(); cx2.arc(hx + hr * .4, hy, hr, -Math.PI * .6, Math.PI * .6); cx2.stroke();
+      cx2.strokeStyle = 'rgba(255,255,255,.20)'; cx2.lineWidth = wt * .8;
+      cx2.beginPath(); cx2.arc(hx + hr * .4 + wt * .5, hy, hr * .86, -Math.PI * .5, Math.PI * .5); cx2.stroke();
+    }
+    // tulip stem + foot
+    if (mg.g.stem){
+      const { cxm, stemW, stemTop, footY, footRx } = mg;
+      const sg = cx2.createLinearGradient(cxm - stemW, 0, cxm + stemW, 0);
+      sg.addColorStop(0, 'rgba(255,255,255,.42)'); sg.addColorStop(.5, 'rgba(190,205,225,.16)'); sg.addColorStop(1, 'rgba(255,255,255,.34)');
+      cx2.fillStyle = sg; cx2.fillRect(cxm - stemW / 2, stemTop, stemW, footY - stemTop);
+      cx2.strokeStyle = 'rgba(255,255,255,.5)'; cx2.lineWidth = 1.2;
+      cx2.beginPath(); cx2.moveTo(cxm - stemW / 2, stemTop); cx2.lineTo(cxm - stemW / 2, footY); cx2.stroke();
+      cx2.beginPath(); cx2.moveTo(cxm + stemW / 2, stemTop); cx2.lineTo(cxm + stemW / 2, footY); cx2.stroke();
+      cx2.beginPath(); cx2.ellipse(cxm, footY, footRx, W * .022, 0, 0, 7);
+      cx2.fillStyle = 'rgba(200,215,235,.30)'; cx2.fill();
+      cx2.strokeStyle = 'rgba(255,255,255,.55)'; cx2.lineWidth = 2; cx2.stroke();
+      cx2.beginPath(); cx2.ellipse(cxm, footY - 1, footRx * .8, W * .012, 0, Math.PI * 1.1, Math.PI * 1.9);
+      cx2.strokeStyle = 'rgba(255,255,255,.5)'; cx2.stroke();
+    }
 
     // ---- contents, clipped to the inner glass ----
     cx2.save(); innerPath(cx2); cx2.clip();
@@ -334,7 +485,7 @@ canvas#mug{width:100%;height:100%;display:block}
     // beer body
     if (beerH > 0){
       const g = cx2.createLinearGradient(0, beerTop, 0, beerTop + beerH);
-      g.addColorStop(0, '#ffd76a'); g.addColorStop(.4, '#f0a41f'); g.addColorStop(1, '#7a4204');
+      g.addColorStop(0, pal.body[0]); g.addColorStop(.4, pal.body[1]); g.addColorStop(1, pal.body[2]);
       cx2.fillStyle = g;
       const amp = holding ? 2.4 : 1.1;
       cx2.beginPath();
@@ -345,7 +496,7 @@ canvas#mug{width:100%;height:100%;display:block}
       cx2.lineTo(inner.x, inner.y + inner.h);
       cx2.closePath(); cx2.fill();
       // meniscus light band on the surface
-      cx2.fillStyle = 'rgba(255,230,160,.30)';
+      cx2.fillStyle = pal.meniscus;
       cx2.beginPath();
       cx2.moveTo(inner.x, beerTop + 1);
       for (let px = 0; px <= inner.w; px += 5)
@@ -356,7 +507,7 @@ canvas#mug{width:100%;height:100%;display:block}
       // backlight glow through the beer
       const gl = cx2.createRadialGradient(inner.x + inner.w * .5, beerTop + beerH * .55, 6,
                                           inner.x + inner.w * .5, beerTop + beerH * .55, beerH * .95);
-      gl.addColorStop(0, 'rgba(255,214,110,.34)'); gl.addColorStop(1, 'rgba(255,214,110,0)');
+      gl.addColorStop(0, pal.glowA); gl.addColorStop(1, pal.glowB);
       cx2.fillStyle = gl; cx2.fillRect(inner.x, beerTop, inner.w, beerH);
       // edge absorption darkening
       const side = cx2.createLinearGradient(inner.x, 0, inner.x + inner.w, 0);
@@ -399,7 +550,7 @@ canvas#mug{width:100%;height:100%;display:block}
         cx2.arc(inner.x + px + 4, fy + 7 + Math.sin(px * .15 + ts * .003) * ampF * .4, 5.6, Math.PI, 0);
       cx2.lineTo(inner.x + inner.w, fy + fh);
       cx2.closePath();
-      cx2.fillStyle = '#f8efdb'; cx2.fill();
+      cx2.fillStyle = pal.foamHead; cx2.fill();
       cx2.save(); cx2.clip();
       cx2.globalAlpha = .55; cx2.fillStyle = cx2.createPattern(foamTex, 'repeat');
       cx2.fillRect(inner.x, fy - 2, inner.w, fh + 4);
@@ -414,7 +565,7 @@ canvas#mug{width:100%;height:100%;display:block}
     // foam dome crowning over the rim when full
     if (headH > 0 && fill > .96){
       const dome = inner.w * .11 * Math.min(1, (fill - .96) / .04);
-      cx2.fillStyle = '#faf1dd';
+      cx2.fillStyle = pal.dome;
       cx2.beginPath(); cx2.ellipse(inner.x + inner.w / 2, inner.y + 2, inner.w * .42, dome, 0, Math.PI, 0); cx2.fill();
       cx2.save();
       cx2.beginPath(); cx2.ellipse(inner.x + inner.w / 2, inner.y + 2, inner.w * .42, dome, 0, Math.PI, 0); cx2.clip();
@@ -429,12 +580,12 @@ canvas#mug{width:100%;height:100%;display:block}
       const sx = mx + mw / 2 + Math.sin(pourStreamPhase * 7) * 1.4;
       const targetY = Math.max(headH > 0 ? foamTop + 4 : beerTop + 2, inner.y) + 2;
       const g2 = cx2.createLinearGradient(0, my - H * .03, 0, targetY);
-      g2.addColorStop(0, 'rgba(255,215,100,0)'); g2.addColorStop(.25, 'rgba(255,215,100,.85)'); g2.addColorStop(1, 'rgba(240,164,31,.95)');
+      g2.addColorStop(0, pal.streamA + '0)'); g2.addColorStop(.25, pal.streamA + '.85)'); g2.addColorStop(1, pal.streamB + '.95)');
       cx2.strokeStyle = g2; cx2.lineWidth = 6; cx2.lineCap = 'round';
       cx2.beginPath(); cx2.moveTo(sx, my - H * .03); cx2.lineTo(sx, targetY); cx2.stroke();
-      cx2.strokeStyle = 'rgba(255,238,180,.8)'; cx2.lineWidth = 2;
+      cx2.strokeStyle = pal.streamHi + '.8)'; cx2.lineWidth = 2;
       cx2.beginPath(); cx2.moveTo(sx, my - H * .03 + 4); cx2.lineTo(sx, targetY - 2); cx2.stroke();
-      cx2.fillStyle = 'rgba(255,222,140,.85)';
+      cx2.fillStyle = pal.splash + '.85)';
       for (let i = 0; i < 5; i++){
         const dx = Math.sin(ts * .012 + i * 2.1) * 9, dy = Math.abs(Math.sin(ts * .009 + i * 1.3)) * 6;
         cx2.beginPath(); cx2.arc(sx + dx, targetY - dy, 1.4 + sr(i) * 1.2, 0, 7); cx2.fill();
@@ -476,6 +627,17 @@ canvas#mug{width:100%;height:100%;display:block}
     cx2.beginPath(); cx2.ellipse(mx + mw / 2, my, mw / 2, mw * .05, 0, Math.PI * 1.05, Math.PI * 1.95); cx2.stroke();
     cx2.strokeStyle = 'rgba(255,255,255,.15)';
     cx2.beginPath(); cx2.ellipse(mx + mw / 2, my, mw / 2, mw * .05, 0, Math.PI * .05, Math.PI * .95); cx2.stroke();
+
+    // stein ridges
+    if (mg.g.bands){
+      for (const fy of [.16, .26]){
+        const yy = my + mh * fy;
+        cx2.strokeStyle = 'rgba(255,255,255,.16)'; cx2.lineWidth = 3.5;
+        cx2.beginPath(); cx2.moveTo(mx + 1, yy); cx2.lineTo(mx + mw - 1, yy); cx2.stroke();
+        cx2.strokeStyle = 'rgba(0,0,0,.28)'; cx2.lineWidth = 2;
+        cx2.beginPath(); cx2.moveTo(mx + 1, yy + 3.5); cx2.lineTo(mx + mw - 1, yy + 3.5); cx2.stroke();
+      }
+    }
 
     // condensation
     if (fill > .08){
@@ -564,6 +726,7 @@ canvas#mug{width:100%;height:100%;display:block}
     audio(); if (AC.state === 'suspended') AC.resume();
     holding = true; startT = performance.now(); elapsed = 0; fill = 0; lastChipTier = null;
     nextCaption = 0; hideCaption();
+    if (window.HMB) window.HMB.holdStart();
     chip.classList.remove('on');
     timerLbl.textContent = 'holding';
     holdBtn.classList.add('holding'); holdBtn.textContent = 'Pouring…';
@@ -591,6 +754,7 @@ canvas#mug{width:100%;height:100%;display:block}
   // ---------- result ----------
   function finish(){
     const s = elapsed, tier = tierFor(s);
+    if (window.HMB) window.HMB.holdEnd(s);
     if (s > best){ best = s; localStorage.setItem('hmb_best_v2', String(best)); renderPB(); }
     document.getElementById('rRating').textContent = tier.name;
     document.getElementById('rTime').textContent = s.toFixed(1) + 's hold';
@@ -600,6 +764,7 @@ canvas#mug{width:100%;height:100%;display:block}
   }
   document.getElementById('againBtn').addEventListener('click', () => {
     result.classList.remove('on'); fill = 0; elapsed = 0; timerEl.textContent = '0.0';
+    document.getElementById('rExtra').innerHTML = '';
   });
   document.getElementById('shareBtn').addEventListener('click', async () => {
     const s = elapsed, tier = tierFor(s);
@@ -617,7 +782,10 @@ canvas#mug{width:100%;height:100%;display:block}
   });
 
   // ---------- demo hook (?demo=<seconds>) for visual verification ----------
-  const demo = parseFloat(new URLSearchParams(location.search).get('demo') || '0');
+  const qp = new URLSearchParams(location.search);
+  if (GLASS_DEFS[qp.get('glass')]){ style.glass = qp.get('glass'); mg = null; }
+  if (BEER_DEFS[qp.get('beer')]){ style.beer = qp.get('beer'); foamTex = null; }
+  const demo = parseFloat(qp.get('demo') || '0');
   if (demo > 0){
     document.documentElement.classList.add('notrans');
     gate.style.display = 'none';
@@ -630,7 +798,11 @@ canvas#mug{width:100%;height:100%;display:block}
   }
 
   requestAnimationFrame(loop);
+  if (new URLSearchParams(location.search).get('canvasdump')) setTimeout(() => {
+    document.body.innerHTML = '<textarea id="dump">' + cv.toDataURL() + '</textarea><div id="dbg">stem=' + JSON.stringify({cxm: mg.cxm, stemW: mg.stemW, stemTop: mg.stemTop, footY: mg.footY, glass: style.glass, g: mg.g && mg.g.stem}) + '</div>';
+  }, 1500);
 })();
 </script>
+<script type="module" src="premium.js"></script>
 </body>
 </html>
