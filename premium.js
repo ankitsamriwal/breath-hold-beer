@@ -284,5 +284,3 @@ async function handleCheckoutReturn(){
     paintHeader(); // premium UI hidden; free game unaffected
   }
 })();
-
-window.HMB_DEBUG = () => ({ paid: profile?.paid ?? null, signedIn: !!session, holdSessionId });
