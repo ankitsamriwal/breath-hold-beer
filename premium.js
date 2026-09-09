@@ -201,11 +201,15 @@ function nameModal(){
 }
 
 // ---------- game hooks ----------
+let holdStartPromise = null;
 window.HMB = {
   async holdStart(){
     holdSessionId = null;
     if (!session || !profile?.paid) return;
-    try { const r = await fn('hold-start'); holdSessionId = r.session_id; } catch (e) { /* play on */ }
+    holdStartPromise = (async () => {
+      try { const r = await fn('hold-start'); holdSessionId = r.session_id; } catch (e) { /* play on */ }
+    })();
+    await holdStartPromise;
   },
   async holdEnd(seconds){
     const extra = $('rExtra');
@@ -215,6 +219,9 @@ window.HMB = {
         : `Local score - <a href="#" id="rUpsell" style="color:var(--gold)">sign in</a> to make it count.`;
       extra.querySelector('#rUpsell')?.addEventListener('click', (e) => { e.preventDefault(); premiumModal(); });
       return;
+    }
+    if (!holdSessionId && holdStartPromise){
+      await Promise.race([holdStartPromise, new Promise((r) => setTimeout(r, 4000))]);
     }
     if (!holdSessionId){ extra.innerHTML = 'Could not attest this hold - go again to post it.'; return; }
     try {
@@ -277,3 +284,5 @@ async function handleCheckoutReturn(){
     paintHeader(); // premium UI hidden; free game unaffected
   }
 })();
+
+window.HMB_DEBUG = () => ({ paid: profile?.paid ?? null, signedIn: !!session, holdSessionId });
