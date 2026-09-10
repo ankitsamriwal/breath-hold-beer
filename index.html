@@ -171,7 +171,11 @@ body{
   background-image:radial-gradient(circle at 76% 38%,rgba(255,181,27,.055),transparent 30%);
   align-items:center;touch-action:manipulation;
 }
-body::before{content:"A FRESH LOOK ON TAP\A Small pause.\A Big character.\A A little amber. A little atmosphere. One refreshingly simple challenge.";white-space:pre-wrap;pointer-events:none}
+.hero-copy{color:var(--dim)}
+.hero-kicker{color:var(--gold);font-family:'Space Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin-bottom:24px}
+.hero-copy h1{font-size:clamp(52px,6vw,82px);line-height:.98;letter-spacing:-.065em;color:var(--cream);font-weight:700;margin:0 0 28px}
+.hero-copy h1 strong{color:var(--gold);font-weight:700}
+.hero-copy p{font-size:16px;line-height:1.75;max-width:480px}
 header{max-width:1120px;padding:30px 0 26px;border-bottom:1px solid var(--line);align-items:center}
 .wordmark{display:flex;align-items:center;gap:12px;font-size:0;letter-spacing:0;line-height:1}
 .wordmark::before{content:"✳";display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--gold);color:#161512;font-size:18px}
@@ -196,15 +200,16 @@ canvas#mug{position:relative;z-index:2;min-width:1px;min-height:1px;filter:drop-
 @media (min-width:900px){
   body{display:grid;grid-template-columns:minmax(360px,1fr) minmax(440px,490px);grid-template-rows:auto 1fr auto;column-gap:72px;padding:0 max(40px,calc((100vw - 1120px)/2));min-height:100vh;align-items:stretch}
   header{grid-column:1/-1;width:100%}
-  body::before{grid-column:1;grid-row:2/4;align-self:center;color:var(--dim);font-size:16px;line-height:1.75;max-width:520px}
-  body::first-line{color:var(--gold)}
-  .stage{grid-column:2;grid-row:2;align-self:end;width:100%;max-width:none;min-height:525px;padding:28px 28px 8px;justify-content:center}
+  .hero-copy{grid-column:1;grid-row:2/4;align-self:center;max-width:560px}
+    .stage{grid-column:2;grid-row:2;align-self:end;width:100%;max-width:none;min-height:525px;padding:28px 28px 8px;justify-content:center}
   .controls{grid-column:2;grid-row:3;width:100%;max-width:none;padding:8px 28px 24px;gap:12px;align-self:start}
   .mug-wrap{width:205px;min-height:268px}
 }
 @media (max-width:899px){
   body{display:flex;padding:0 16px 26px}
-  body::before{order:1;align-self:stretch;margin:48px 2px 28px;color:var(--dim);font-size:16px;line-height:1.7}
+  .hero-copy{order:1;align-self:stretch;margin:48px 2px 32px}
+  .hero-copy h1{font-size:56px;margin-bottom:24px}
+  .hero-copy p{font-size:16px}
   header{order:0;width:100%;padding:18px 0 17px}
   .stage{order:2;width:100%;max-width:560px;flex:none;padding:26px 20px 4px;min-height:560px;justify-content:center}
   .controls{order:3;width:100%;padding:10px 20px 22px;flex:none}
@@ -221,6 +226,8 @@ canvas#mug{position:relative;z-index:2;min-width:1px;min-height:1px;filter:drop-
   <div class="wordmark">HOLD <em>MY</em> BEER</div>
   <div class="hnav"><div class="pb" id="pb"></div><button class="hbtn" id="boardBtn">Board</button><button class="hbtn gold" id="premBtn">Premium</button></div>
 </header>
+
+<section class="hero-copy" aria-labelledby="hero-title"><div class="hero-kicker">A fresh look on tap</div><h1 id="hero-title">Small pause.<br><strong>Big character.</strong></h1><p>A little amber. A little atmosphere. One refreshingly simple challenge.</p></section>
 
 <div class="stage" id="stage">
   <div class="orbit-wrap">
