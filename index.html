@@ -210,8 +210,8 @@ canvas#mug{position:relative;z-index:2;min-width:1px;min-height:1px;filter:drop-
   .hero-copy{order:1;align-self:stretch;margin:48px 2px 32px}
   .hero-copy h1{font-size:56px;margin-bottom:24px}
   .hero-copy p{font-size:16px}
-  header{order:0;width:100%;padding:18px 0 17px;flex-wrap:wrap;gap:10px 14px}
-  .hnav{margin-left:auto;flex-wrap:wrap;justify-content:flex-end;row-gap:8px}
+  header{order:0;width:100%;padding:calc(18px + env(safe-area-inset-top)) 0 17px;display:flex;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:12px;position:sticky;top:0;z-index:60;background:#151515}
+  .wordmark{width:100%}.hnav{width:100%;margin-left:0;display:flex;flex-wrap:nowrap;white-space:nowrap;align-items:center;justify-content:flex-end;gap:10px}.hnav .pb{margin-right:auto}
   .stage{order:2;width:100%;max-width:560px;flex:none;padding:26px 20px 4px;min-height:560px;justify-content:center}
   .controls{order:3;width:100%;padding:10px 20px 22px;flex:none}
   .orbit-wrap{width:120px;height:120px}
